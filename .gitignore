@@ -1,0 +1,6 @@
+# Ignore editor files.
+/.idea
+/.ropeproject/
+*.DS_Store
+pubhubs_hub/report.xml
+client-config.local.js
