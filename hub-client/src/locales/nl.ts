@@ -82,6 +82,7 @@ const nl = {
 		read: 'Lees',
 		event: 'Evenement',
 		discussion: 'Discussie',
+		video_call: 'Videogesprek',
 	},
 	settings: {
 		displayname: 'Bijnaam',

@@ -4,6 +4,8 @@
 # Please do not change that file yourself, but instead make a copy called "pubhubs.yaml", and modify tbat.
 #
 phc_url: http://localhost:8080
+livekit:
+  bind_to: "0.0.0.0:5050"
 auths:
   bind_to: "0.0.0.0:6060"
 transcryptor:
@@ -11,6 +13,8 @@ transcryptor:
 phc:
   auths_url: http://localhost:6060
   transcryptor_url: http://localhost:7070
+  livekit_url: http://localhost:5050
+
   bind_to: "0.0.0.0:8080"
   hubs:
     # WARNINGs:

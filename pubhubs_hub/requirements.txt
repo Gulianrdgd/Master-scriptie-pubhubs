@@ -6,3 +6,4 @@ typing-extensions>=3.7.4
 Twisted>=18.9.0
 # /use the same version as the docker image is built from
 matrix-synapse==1.87
+livekit-api>=0.4.1

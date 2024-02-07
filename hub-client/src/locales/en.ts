@@ -82,6 +82,7 @@ const en = {
 		read: 'Read',
 		event: 'Event',
 		discussion: 'Discussion',
+		video_call: 'Video call',
 	},
 	settings: {
 		displayname: 'Nickname',

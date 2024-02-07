@@ -12,6 +12,8 @@ pub struct Constellation {
     pub phc_url: url::Url,
     pub auths_jwt_key: serde_ext::B16<ed25519_dalek::VerifyingKey>,
     pub auths_url: url::Url,
+    pub livekit_jwt_key: serde_ext::B16<ed25519_dalek::VerifyingKey>,
+    pub livekit_url: url::Url,
 }
 
 impl Constellation {
@@ -21,6 +23,7 @@ impl Constellation {
             servers::Name::PubhubsCentral => &self.phc_url,
             servers::Name::Transcryptor => &self.transcryptor_url,
             servers::Name::AuthenticationServer => &self.auths_url,
+            servers::Name::LikeKitAuth => &self.livekit_url
         }
     }
 }

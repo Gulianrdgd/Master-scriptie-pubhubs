@@ -32,6 +32,9 @@ pub struct Config {
 
     /// Configuration to run the Authentication Server
     pub auths: Option<ServerConfig<auths::ExtraConfig>>,
+
+    pub livekit: Option<ServerConfig<livekit::ExtraConfig>>,
+
 }
 
 /// Configuration for one server
@@ -120,6 +123,9 @@ pub mod phc {
         /// Where can we reach the authentication server?
         pub auths_url: Url,
 
+        /// Where can we reach the livekit auth server?
+        pub livekit_url: Url,
+
         pub master_private_key_part: Option<serde_ext::B16<curve25519_dalek::Scalar>>,
 
         /// The hubs that are known to us
@@ -136,6 +142,14 @@ pub mod transcryptor {
 }
 
 pub mod auths {
+    use super::*;
+
+    #[derive(serde::Deserialize, Debug, Clone)]
+    #[serde(deny_unknown_fields)]
+    pub struct ExtraConfig {}
+}
+
+pub mod livekit {
     use super::*;
 
     #[derive(serde::Deserialize, Debug, Clone)]

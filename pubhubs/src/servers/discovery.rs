@@ -22,6 +22,7 @@ pub async fn drive_discovery(phc_url: &url::Url) -> anyhow::Result<()> {
     let other_servers = [
         servers::Name::Transcryptor,
         servers::Name::AuthenticationServer,
+        servers::Name::LikeKitAuth,
     ];
 
     let infs = futures_util::future::try_join_all(

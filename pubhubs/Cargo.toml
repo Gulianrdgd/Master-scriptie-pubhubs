@@ -160,6 +160,9 @@ futures-util = { version = "0.3", optional = true }
 prometheus = { version = "0.13", optional = true }
 strum_macros = { version = "0.25", optional = true }
 
+# livekit
+livekit-api = { version = "0.3.0", optional = true }
+
 #iLab crates
 # NOTE: Versions 0.2.1 for expry and hairy are available, but are rather non-backwards compatible.
 expry = { version = "0.1", optional = true } 
@@ -167,6 +170,7 @@ hairy = { version = "0.1", optional = true }
 
 # command line argument parser
 clap = { version = "4.3", features = ["derive"], optional = true }
+
 
 [dev-dependencies]
 tempfile = "3.4"

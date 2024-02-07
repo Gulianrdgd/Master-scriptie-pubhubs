@@ -11,6 +11,7 @@ pub(super) mod server;
 pub(crate) mod auths;
 pub(crate) mod phc;
 pub(crate) mod transcryptor;
+pub(crate) mod livekit;
 
 pub use config::Config;
 pub(super) use constellation::Constellation;

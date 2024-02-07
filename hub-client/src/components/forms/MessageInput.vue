@@ -52,7 +52,9 @@
 		<!-- Sendbutton -->
 		<Button class="h-[50px] min-w-24 ml-2 mr-2 flex items-center rounded-xl" :disabled="!buttonEnabled" @click="submitMessage()"><Icon type="talk" size="sm" class="mr-px mb-1"></Icon>{{ $t(sendMessageText) }}</Button>
 
-		<!-- Floating menus -->
+    <Button v-if="showVideoCall" class="h-[50px] min-w-24 ml-2 mr-2 flex items-center rounded-xl" @click="startVideoCall()"><Icon type="video-call" size="sm" class="mr-px fill-current stroke-current"></Icon>{{ $t('rooms.video_call') }}</Button>
+
+    <!-- Floating menus -->
 		<Mention :msg="value" :top="caretPos.top" :left="caretPos.left" @click="mentionUser($event)"></Mention>
 
 		<Popover v-if="showingUploadPicker" :outside-node="getDocument()" :ignore-click-outside="'openingUploadPicker'" ref="elPopover" @close="showingUploadPicker = false" class="absolute bottom-14">
@@ -103,6 +105,7 @@
 	const buttonEnabled = ref(false);
 	const showingUploadPicker = ref(false);
 	const signingMessage = ref(false);
+  const showVideoCall = ref(true);
 	const showEmojiPicker = ref(false);
 	const fileUploadDialog = ref(false);
 	const fileInfo = ref<File>();
@@ -183,6 +186,14 @@
 			}
 		});
 	}
+
+  function startVideoCall() {
+    const accessToken = pubhubs.Auth.getAccessToken();
+
+    if (accessToken) {
+      // Start video cal things
+    }
+  }
 
 	function clickedAttachment() {
 		elFileInput.value?.click();

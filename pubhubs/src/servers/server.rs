@@ -24,6 +24,9 @@ pub enum Name {
 
     #[serde(rename = "auths")]
     AuthenticationServer,
+
+    #[serde(rename = "livekit")]
+    LikeKitAuth,
 }
 
 impl std::fmt::Display for Name {
@@ -35,6 +38,7 @@ impl std::fmt::Display for Name {
                 Name::PubhubsCentral => "PubHubs Central",
                 Name::Transcryptor => "Transcryptor",
                 Name::AuthenticationServer => "Authentication Server",
+                Name::LikeKitAuth => "LiveKit Autentication Server"
             }
         )
     }

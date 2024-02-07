@@ -29,6 +29,7 @@ impl crate::servers::Server for Server {
             base: AppCreatorBase::new(&self.base),
             transcryptor_url: xconf.transcryptor_url.clone(),
             auths_url: xconf.auths_url.clone(),
+            livekit_url: xconf.livekit_url.clone(),
         }
     }
 
@@ -41,6 +42,7 @@ pub struct App {
     base: AppBase<Server>,
     transcryptor_url: url::Url,
     auths_url: url::Url,
+    livekit_url: url::Url
 }
 
 impl crate::servers::App<Server> for Rc<App> {
@@ -51,13 +53,15 @@ impl crate::servers::App<Server> for Rc<App> {
         _phc_di: api::DiscoveryInfoResp,
     ) -> LocalBoxFuture<'_, api::Result<Constellation>> {
         Box::pin(async {
-            let (tdi_res, asdi_res) = tokio::join!(
+            let (tdi_res, asdi_res, lki_res) = tokio::join!(
                 self.discovery_info_of(servers::Name::Transcryptor, &self.transcryptor_url),
-                self.discovery_info_of(servers::Name::AuthenticationServer, &self.auths_url)
+                self.discovery_info_of(servers::Name::AuthenticationServer, &self.auths_url),
+                self.discovery_info_of(servers::Name::LikeKitAuth, &self.livekit_url)
             );
 
             let tdi = api::return_if_ec!(tdi_res);
             let asdi = api::return_if_ec!(asdi_res);
+            let lki = api::return_if_ec!(lki_res);
 
             api::ok(crate::servers::Constellation {
                 phc_url: self.base.phc_url.clone(),
@@ -66,6 +70,9 @@ impl crate::servers::App<Server> for Rc<App> {
                 transcryptor_jwt_key: tdi.jwt_key,
                 auths_url: self.auths_url.clone(),
                 auths_jwt_key: asdi.jwt_key,
+                livekit_url: self.livekit_url.clone(),
+                livekit_jwt_key: lki.jwt_key
+                
             })
         })
     }
@@ -101,6 +108,7 @@ pub struct AppCreator {
     base: AppCreatorBase,
     transcryptor_url: url::Url,
     auths_url: url::Url,
+    livekit_url: url::Url
 }
 
 impl crate::servers::AppCreator<Server> for AppCreator {
@@ -109,6 +117,7 @@ impl crate::servers::AppCreator<Server> for AppCreator {
             base: AppBase::new(&self.base, shutdown_sender),
             transcryptor_url: self.transcryptor_url.clone(),
             auths_url: self.auths_url.clone(),
+            livekit_url: self.livekit_url.clone(),
         })
     }
 }

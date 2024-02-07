@@ -16,3 +16,15 @@ services:
       - $PWD/matrix_test_config:/data:rw
     extra_hosts:
       - "host.docker.internal:host-gateway"
+
+  livekit:
+    image: livekit/livekit-server:latest
+    command: --dev --config /etc/livekit.yaml
+    restart: unless-stopped
+    ports:
+      - "7880:7880"
+      - "7881:7881"
+      - "7882:7882"
+      - "50100-50200:50100-50200"
+    volumes:
+      - ./livekit.yaml:/etc/livekit.yaml
