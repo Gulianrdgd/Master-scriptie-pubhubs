@@ -91,6 +91,7 @@
 
 	import { YiviSigningSessionResult } from '@/lib/signedMessages';
 	import { fileUpload as uploadHandler } from '@/composables/fileUpload';
+  import {api_synapse} from "@/core/api";
 
 	const route = useRoute();
 	const rooms = useRooms();
@@ -187,8 +188,15 @@
 		});
 	}
 
-  function startVideoCall() {
+  async function startVideoCall() {
     const accessToken = pubhubs.Auth.getAccessToken();
+
+    const resp = await api_synapse.apiPOST(api_synapse.apiURLS.videoCall, {
+      room_id: rooms.currentRoomId,
+      access_token: accessToken,
+    });
+
+    console.log(resp)
 
     if (accessToken) {
       // Start video cal things

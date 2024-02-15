@@ -20,6 +20,7 @@ const api_synapse = new Api(BASE_URL + '/_synapse/', {
 	deleteRoom: 'admin/v2/rooms/',
 	notice: 'client/notices',
 	securedRoom: 'client/srextra',
+	videoCall: 'client/videocall',
 });
 
 // @ts-ignore

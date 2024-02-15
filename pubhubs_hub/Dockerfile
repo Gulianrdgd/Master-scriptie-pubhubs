@@ -29,6 +29,8 @@ FROM matrixdotorg/synapse:v1.94.0
 
 COPY --from=yivi_build /go/bin/irma /usr/bin/irma
 COPY --from=libpubhubs_build /wd/target/debug/libpubhubs.so /usr/lib
+COPY --from=livekit/livekit-server:latest /livekit-server /usr/bin/livekit-server
+COPY --chmod=755 pubhubs_hub/livekit.yaml /conf/livekit.yaml
 COPY --chmod=755 pubhubs_hub/start.sh .
 
 # Secret to be used by libpep to decrypt the pseudonyms
