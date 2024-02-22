@@ -11,7 +11,6 @@ import {
 import { useSettings, User, useConnection, useUser, useRooms } from '@/store/store';
 import { usePubHubs } from '@/core/pubhubsStore';
 import {GroupCallEventHandlerEvent} from "matrix-js-sdk/lib/webrtc/groupCallEventHandler";
-
 class Events {
 	private client: MatrixClient;
 

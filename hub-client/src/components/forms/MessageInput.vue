@@ -67,7 +67,7 @@
 		<div v-if="signingMessage" class="absolute bottom-[400px] left-60" id="yivi-web-form"></div>
 
 		<!-- Emojipicker -->
-		<div v-if="showEmojiPicker" class="absolute bottom-16 right-8" ref="elEmojiPicker">
+		<div v-if="showEmojiPicker" class="absolute bottom-16 md:right-36 xs:right-5" ref="elEmojiPicker">
 			<EmojiPicker @emojiSelected="clickedEmoticon" />
 		</div>
 		<div class="text-black dark:bg-gray-dark dark:text-white">
@@ -77,7 +77,7 @@
 </template>
 
 <script setup lang="ts">
-import {watch, ref, onMounted, onUnmounted, nextTick, computed} from 'vue';
+	import {watch, ref, onMounted, onUnmounted, nextTick, computed} from 'vue';
 	import { useFormInputEvents, usedEvents } from '@/composables/useFormInputEvents';
 	import { useMatrixFiles } from '@/composables/useMatrixFiles';
 	import { useRooms } from '@/store/store';

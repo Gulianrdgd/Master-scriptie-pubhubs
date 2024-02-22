@@ -41,6 +41,7 @@ class YiviEndpoint(Resource):
         self.putChild(b"start", YiviStart(config, module_api, store))
         self.putChild(b"result", YiviResult(config, module_api, store, joiner))
 
+
 class YiviStart(DirectServeJsonResource):
     """Servlet containing the endpoint to start the Yivi session.
     Will ask to disclose the attributes as specified in the module configuration

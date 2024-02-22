@@ -4,10 +4,10 @@ use crate::servers::{self, api, Constellation};
 use anyhow::ensure;
 
 /// Drives the discovery process of the pubhubs servers until all servers are up and running
-/// or an error is encountered.
+/// or an error is encountered.  Returns the resulting [Constellation].
 ///
 /// Must be run from within a [tokio::task::LocalSet].
-pub async fn drive_discovery(phc_url: &url::Url) -> anyhow::Result<()> {
+pub async fn drive_discovery(phc_url: &url::Url) -> anyhow::Result<Constellation> {
     let now = std::time::Instant::now();
 
     let phc_inf = drive_discovery_of(phc_url).await?;
@@ -22,7 +22,6 @@ pub async fn drive_discovery(phc_url: &url::Url) -> anyhow::Result<()> {
     let other_servers = [
         servers::Name::Transcryptor,
         servers::Name::AuthenticationServer,
-        servers::Name::LikeKitAuth,
     ];
 
     let infs = futures_util::future::try_join_all(
@@ -47,7 +46,7 @@ pub async fn drive_discovery(phc_url: &url::Url) -> anyhow::Result<()> {
         now.elapsed().as_secs_f32()
     );
 
-    Ok(())
+    Ok(phc_inf.constellation.unwrap())
 }
 
 /// Drive discovery of the server at the given url, returns the
@@ -142,6 +141,16 @@ impl<'a> DiscoveryInfoCheck<'a> {
                 );
                 return api::err(api::ErrorCode::Malconfigured);
             }
+        }
+
+        if inf.master_enc_key_part.is_some()
+            != matches!(
+                inf.name,
+                servers::Name::PubhubsCentral | servers::Name::Transcryptor
+            )
+        {
+            log::error!("master_enc_key_part must be set by the transcryptor and pubhub central, but no other servers - url: {}", source);
+            return api::err(api::ErrorCode::InternalError);
         }
 
         if inf.state == api::ServerState::UpAndRunning {
