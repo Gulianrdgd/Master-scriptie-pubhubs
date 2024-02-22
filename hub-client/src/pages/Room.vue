@@ -13,6 +13,7 @@
 									{{ getTopic() }}
 								</span>
 							</p>
+              <p>{{ rooms.videoCallStarted ? "Live" : ""}}</p>
 						</div>
 					</div>
 					<SearchInput class="ml-16 mt-6 flex-auto" @submit="search"></SearchInput>

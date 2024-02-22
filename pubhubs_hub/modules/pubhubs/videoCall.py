@@ -3,17 +3,16 @@ import asyncio
 
 
 
-async def start_video_call(self, request):
+async def start_video_call(self, user, room_name):
     """Start a video call.
-    1. Should authenticate the user.
-    2. Should check if the user is allowed to start a video call.
-    3. Should create room if it doesn't exist.
-    4. Should create a video call.
-    5. Should generate a token for the video call.
+    This should be dumb, the authentication should be done in _web
+    1. Should create room if it doesn't exist.
+    2. Should create a video call.
+    3. Should generate a token for the video call.
     """
     print("START VIDEO CALL")
-    asyncio.get_event_loop().run_until_complete(create_room(self, room_name="room_name"))
-    token = await generate_access_token(self, pseudonym="pseudonym", username="username", room_name="room_name")
+    asyncio.get_event_loop().run_until_complete(create_room(self, room_name=room_name))
+    token = await generate_access_token(self, pseudonym=user, username=user, room_name=room_name)
     room = "room_name"
 
     return token, room

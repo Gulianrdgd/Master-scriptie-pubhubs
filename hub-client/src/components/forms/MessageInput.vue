@@ -77,7 +77,7 @@
 </template>
 
 <script setup lang="ts">
-	import { watch, ref, onMounted, onUnmounted, nextTick, computed } from 'vue';
+import {watch, ref, onMounted, onUnmounted, nextTick, computed} from 'vue';
 	import { useFormInputEvents, usedEvents } from '@/composables/useFormInputEvents';
 	import { useMatrixFiles } from '@/composables/useMatrixFiles';
 	import { useRooms } from '@/store/store';
@@ -91,7 +91,6 @@
 
 	import { YiviSigningSessionResult } from '@/lib/signedMessages';
 	import { fileUpload as uploadHandler } from '@/composables/fileUpload';
-  import {api_synapse} from "@/core/api";
 
 	const route = useRoute();
 	const rooms = useRooms();
@@ -188,24 +187,14 @@
 		});
 	}
 
-  async function startVideoCall() {
-    const accessToken = pubhubs.Auth.getAccessToken();
-
-    const resp = await api_synapse.apiPOST(api_synapse.apiURLS.videoCall, {
-      room_id: rooms.currentRoomId,
-      access_token: accessToken,
-    });
-
-    console.log(resp)
-
-    if (accessToken) {
-      // Start video cal things
-    }
-  }
-
 	function clickedAttachment() {
 		elFileInput.value?.click();
 	}
+
+  function startVideoCall() {
+    console.log('start video call', rooms.currentRoomId);
+    pubhubs.startVideoCall(rooms.currentRoomId);
+  }
 
 	function submitMessage() {
 		if (!value.value || !(typeof value.value == 'string')) return;

@@ -237,6 +237,7 @@ const useRooms = defineStore('rooms', {
 			securedRooms: [] as Array<SecuredRoom>,
 			roomNotices: {} as Record<string, string[]>,
 			securedRoom: {} as SecuredRoom,
+			videoCallStarted: false as boolean,
 		};
 	},
 
@@ -377,6 +378,10 @@ const useRooms = defineStore('rooms', {
 			}
 			return total;
 		},
+
+		videoCallIsStarted(state): boolean {
+			return state.videoCallStarted;
+		}
 	},
 
 	actions: {
@@ -730,6 +735,10 @@ const useRooms = defineStore('rooms', {
 					console.info(`There is an Error: ${error}`);
 				});
 		},
+
+		updateVideoCallState(started: boolean) {
+			this.videoCallStarted = started;
+		}
 	},
 });
 

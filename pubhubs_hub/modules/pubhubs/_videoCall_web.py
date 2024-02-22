@@ -29,11 +29,10 @@ class VideoCallServlet(DirectServeJsonResource):
         self.module_api = api
 
     async def _async_render_GET(self, request: SynapseRequest):
-        """List all secured rooms."""
-        await self.assert_is_admin(request)
-        rooms = await self.store.get_secured_rooms()
-        rooms = [room.to_dict() for room in rooms]
-        respond_with_json(request, 200, rooms, True)
+        """List all videocall rooms. maybe"""
+        # rooms = await self.store.get_secured_rooms()
+        # rooms = [room.to_dict() for room in rooms]
+        # respond_with_json(request, 200, rooms, True)
         pass
 
     async def _async_render_POST(self, request: SynapseRequest):
@@ -41,21 +40,18 @@ class VideoCallServlet(DirectServeJsonResource):
 
         print("POST", request)
 
-        user = await self.assert_is_admin(request)
+        user = await self.module_api.get_user_by_req(request)
+
+        user_id = user.user.to_string()
+
+        print("USER:", user_id)
+        print("User 2", user)
 
         try:
-            request_body = parse_json_object_from_request(request)
-            print("BODY:", request_body)
-            token, room_id = await start_video_call(self, request)
+            token, room_id = await start_video_call(self, user_id)
 
 
             respond_with_json(request, 200, {}, True)
         except TypeError as e:
             respond_with_json(request, 400, {"errors": f"{str(e)}"}, True)
-
-    async def assert_is_admin(self, request: SynapseRequest) -> Requester:
-        user = await self.module_api.get_user_by_req(request)
-        if not await self.module_api.is_user_admin(user.user.to_string()):
-            raise LoginError(401, "Not an admin", errcode=Codes.UNAUTHORIZED)
-        return user
 

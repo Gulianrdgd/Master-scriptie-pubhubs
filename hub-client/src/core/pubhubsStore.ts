@@ -1,6 +1,14 @@
 import { defineStore } from 'pinia';
 
-import { User as MatrixUser, MatrixClient, ContentHelpers, MatrixError, IStateEventWithRoomId } from 'matrix-js-sdk';
+import {
+	User as MatrixUser,
+	MatrixClient,
+	ContentHelpers,
+	MatrixError,
+	IStateEventWithRoomId,
+	GroupCallType,
+	GroupCallIntent
+} from 'matrix-js-sdk';
 
 import { Authentication } from '@/core/authentication';
 import { Events } from '@/core/events';
@@ -242,6 +250,28 @@ const usePubHubs = defineStore('pubhubs', {
 				signed_message: signedMessage,
 			};
 			await this.client.sendEvent(roomId, 'm.room.message', content);
+		},
+
+		async startVideoCall(roomId: string) {
+			console.log(`Creating group call ${roomId}`);
+			const groupCall = this.client.getGroupCallForRoom(roomId);
+			if(groupCall == undefined) {
+				await this.client.createGroupCall(
+					roomId,
+					GroupCallType.Video,
+					false,
+					GroupCallIntent.Room,
+					true,
+				);
+			}else{
+				console.log(`Group call already exists for room ${roomId} - TERMINATING CALL`);
+				await groupCall.terminate(true);
+			}
+			// const resp = await api_synapse.apiPOST(api_synapse.apiURLS.videoCall, {
+			// 	room_id: roomId,
+			// });
+
+			// console.log(resp);
 		},
 
 		// Sends acknowledgement to synapse about the message has been read.
