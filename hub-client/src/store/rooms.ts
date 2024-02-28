@@ -37,6 +37,7 @@ interface SecuredRoom {
 	user_txt: string;
 	type?: string;
 	expiration_time_days?: number;
+	video_call_permission?: boolean;
 	// secured?: boolean;
 }
 
@@ -86,6 +87,7 @@ interface PubHubsRoomProperties {
 	hidden: boolean;
 	unreadMessages: number;
 	userIsScrolling: boolean;
+	videoCallStarted: boolean;
 }
 
 class Room extends MatrixRoom {
@@ -101,6 +103,7 @@ class Room extends MatrixRoom {
 			hidden: false,
 			unreadMessages: 0,
 			userIsScrolling: false,
+			videoCallStarted: false,
 		};
 	}
 
@@ -114,6 +117,15 @@ class Room extends MatrixRoom {
 			return true;
 		}
 		return this._ph.hidden;
+	}
+
+	set videoCallStarted(started: boolean) {
+		console.log('updateVideoCallState', this.roomId, started);
+		this._ph.videoCallStarted = started;
+	}
+
+	get videoCallStarted(): boolean {
+		return this._ph.videoCallStarted;
 	}
 
 	hide() {
@@ -237,7 +249,6 @@ const useRooms = defineStore('rooms', {
 			securedRooms: [] as Array<SecuredRoom>,
 			roomNotices: {} as Record<string, string[]>,
 			securedRoom: {} as SecuredRoom,
-			videoCallStarted: false as boolean,
 		};
 	},
 
@@ -379,9 +390,6 @@ const useRooms = defineStore('rooms', {
 			return total;
 		},
 
-		videoCallIsStarted(state): boolean {
-			return state.videoCallStarted;
-		}
 	},
 
 	actions: {
@@ -735,10 +743,6 @@ const useRooms = defineStore('rooms', {
 					console.info(`There is an Error: ${error}`);
 				});
 		},
-
-		updateVideoCallState(started: boolean) {
-			this.videoCallStarted = started;
-		}
 	},
 });
 

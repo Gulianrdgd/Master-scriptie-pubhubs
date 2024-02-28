@@ -32,6 +32,7 @@ const useFormState = () => {
 	};
 
 	const updateData = (key: string, value: FormDataType) => {
+		console.log('updateData', key, value, "data", data);
 		data[key].value = value;
 		changed.value = false;
 		validated.value = true;

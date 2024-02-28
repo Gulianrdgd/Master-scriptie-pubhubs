@@ -119,6 +119,7 @@ const nl = {
 		secured_attribute: 'Attribuut',
 		secured_values: 'Waarden',
 		secured_profile: 'Profiel',
+		room_call_permission: 'Iedereen kan een videogesprek starten',
 	},
 	themes: {
 		dark: 'Donker',

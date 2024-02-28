@@ -291,6 +291,8 @@ const usePubHubs = defineStore('pubhubs', {
 		async startVideoCall(roomId: string) {
 			console.log(`Creating group call ${roomId}`);
 			const groupCall = this.client.getGroupCallForRoom(roomId);
+			const rooms = useRooms();
+
 			if(groupCall == undefined) {
 				await this.client.createGroupCall(
 					roomId,
@@ -299,9 +301,14 @@ const usePubHubs = defineStore('pubhubs', {
 					GroupCallIntent.Room,
 					true,
 				);
+
+				rooms.rooms[roomId].videoCallStarted = true;
+
 			}else{
 				console.log(`Group call already exists for room ${roomId} - TERMINATING CALL`);
 				await groupCall.terminate(true);
+				rooms.rooms[roomId].videoCallStarted = false;
+
 			}
 			// const resp = await api_synapse.apiPOST(api_synapse.apiURLS.videoCall, {
 			// 	room_id: roomId,

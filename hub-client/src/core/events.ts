@@ -6,11 +6,13 @@ import {
 	Room as MatrixRoom,
 	RoomEvent,
 	RoomMemberEvent,
-	RoomMember} from 'matrix-js-sdk';
+	RoomMember,
+} from 'matrix-js-sdk';
 
 import { useSettings, User, useConnection, useUser, useRooms } from '@/store/store';
 import { usePubHubs } from '@/core/pubhubsStore';
 import {GroupCallEventHandlerEvent} from "matrix-js-sdk/lib/webrtc/groupCallEventHandler";
+import {GroupCall} from "matrix-js-sdk/lib/webrtc/groupCall";
 class Events {
 	private client: MatrixClient;
 
@@ -45,12 +47,7 @@ class Events {
 					this.client.on(RoomEvent.Timeline, self.eventRoomTimeline);
 					this.client.on(RoomMemberEvent.Name, self.eventRoomMemberName);
 					this.client.on(RoomMemberEvent.Membership, self.eventRoomMemberMembership(this.client));
-					this.client.on(GroupCallEventHandlerEvent.Incoming, (call: any) => {
-						console.debug('== GroupCallEventHandlerEvent.Incoming', call);
-						const rooms = useRooms();
-						rooms.updateVideoCallState(call._state !== 'ended');
-
-					});
+					this.client.on(GroupCallEventHandlerEvent.Incoming, self.eventVideoCallState);
 					resolve(true);
 				}
 			});
@@ -123,6 +120,16 @@ class Events {
 				}
 			}
 		};
+	}
+
+	eventVideoCallState(call: GroupCall) {
+		console.debug('== GroupCallEventHandlerEvent.Incoming', call, call.state !== 'ended');
+
+		const rooms = useRooms();
+
+		const roomId = call.room.roomId;
+		console.log('roomId', roomId);
+		rooms.rooms[roomId].videoCallStarted = call.state !== 'ended';
 	}
 }
 

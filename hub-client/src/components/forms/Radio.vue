@@ -1,5 +1,5 @@
 <template>
-	<ul v-for="option in options" :key="option.value">
+	<ul v-for="option in options" :key="option.value" >
 		<li>
 			<input
 				type="radio"

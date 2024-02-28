@@ -119,6 +119,7 @@ const en = {
 		secured_attribute: 'Attribute',
 		secured_values: 'Values',
 		secured_profile: 'Profile',
+		room_call_permission: 'Everyone could start a call',
 	},
 	themes: {
 		dark: 'Dark',

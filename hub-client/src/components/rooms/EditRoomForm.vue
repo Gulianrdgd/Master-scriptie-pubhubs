@@ -9,7 +9,11 @@
 				<Label>{{ $t('admin.room_type') }}</Label>
 				<TextInput :placeholder="$t('admin.room_type_placeholder')" v-model="editRoom.type" class="w-5/6" @submit="submitRoom()"></TextInput>
 			</FormLine>
-			<div v-if="secured">
+      <FormLine>
+        <Label>{{ $t('admin.room_call_permission') }}</Label>
+        <Checkbox :value="2" @input="updateData('video_call_permission', $event)"></Checkbox>
+      </FormLine>
+      <div v-if="secured">
 				<FormLine class="mb-2">
 					<Label>{{ $t('admin.secured_description') }}</Label>
 					<TextInput :placeholder="$t('admin.secured_description')" v-model="editRoom.user_txt" class="w-5/6"></TextInput>
@@ -33,6 +37,7 @@
 	import { useYivi } from '@/store/yivi';
 	import { useI18n } from 'vue-i18n';
 	import { isEmpty, trimSplit } from '@/core/extensions';
+  import Checkbox from "@/components/forms/Checkbox.vue";
 
 	const { t } = useI18n();
 	const { setData, updateData } = useFormState();
@@ -147,6 +152,11 @@
 				creation_content: {
 					type: room.type == '' ? undefined : room.type,
 				},
+        power_level_content_override: {
+          events: {
+            "org.matrix.msc3401.call": 0, // TODO: Should be changed depending on setting
+         }
+        },
 			};
 			await pubhubs.createRoom(newRoomOptions);
 			editRoom.value = { ...emptyNewRoom };
