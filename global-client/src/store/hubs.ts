@@ -164,7 +164,6 @@ const useHubs = defineStore('hubs', {
 						});
 
 						messagebox.addCallback(MessageType.GetAudioDevices, async () => {
-							console.log('GetAudioDevices');
 							const devices = await LivekitRoom.getLocalDevices('audioinput');
 							console.log('GetAudioDevices', devices);
 							const deviceList = devices.map((device) => {

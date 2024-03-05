@@ -19,7 +19,6 @@
 					<SearchInput class="ml-16 mt-6 flex-auto" @submit="search"></SearchInput>
 				</div>
 			</template>
-      <VideoCall v-if="currentRoom && currentRoom.videoCallStarted" />
 			<RoomTimeline class="pt-12 pb-3" :room_id="rooms.currentRoomId"></RoomTimeline>
 
 			<template #footer>
@@ -36,15 +35,13 @@
 	import { onMounted, watch, ref } from 'vue';
 	import { useRoute } from 'vue-router';
 	import { useI18n } from 'vue-i18n';
-  import {Room, useRooms, RoomMember, useMessageBox, MessageType, Message} from '@/store/store';
+  import {Room, useRooms, RoomMember} from '@/store/store';
 	import { PluginProperties, usePlugins } from '@/store/plugins';
-  import VideoCall from "@/components/rooms/videoCall.vue";
 
 	const route = useRoute();
 	const { t } = useI18n();
 	const rooms = useRooms();
 	const plugins = usePlugins();
-	const messagebox = useMessageBox();
 
   const plugin = ref(false as boolean | PluginProperties);
 
@@ -61,9 +58,6 @@
 	});
 
 	function update() {
-
-    messagebox.sendMessage(new Message(MessageType.GetAudioDevices));
-    console.log("sent message")
     rooms.changeRoom(route.params.id as string);
 		currentRoom.value = rooms.currentRoom;
 		members.value = currentRoom.value?.getPrivateRoomMembers() || [];

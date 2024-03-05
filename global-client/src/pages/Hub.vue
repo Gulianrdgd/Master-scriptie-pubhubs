@@ -1,4 +1,5 @@
 <template>
+  <video-call></video-call>
 	<iframe v-if="hubs.currentHubExists" :src="hubUrl" class="w-full h-full" name="hub" :id="iframeHubId"></iframe>
 </template>
 
@@ -6,6 +7,7 @@
 	import { onMounted, watch, computed } from 'vue';
 	import { useRoute } from 'vue-router';
 	import { iframeHubId, useHubs, useGlobal } from '@/store/store';
+  import VideoCall from "@/pages/videoCall.vue";
 
 	const route = useRoute();
 	const hubs = useHubs();

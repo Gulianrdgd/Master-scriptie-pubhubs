@@ -11,6 +11,10 @@ const props = defineProps({
     type: String,
     default: '',
   },
+  onSelect:{
+    type: Function,
+    default: () => {},
+  }
 });
 
 const emit = defineEmits(usedEvents);
@@ -21,17 +25,16 @@ setOptions(props.options);
 
 function updateSelect(event: Event) {
   const target = event.target as HTMLSelectElement;
-  console.log(target, "NEW!")
   selectOption(target);
   changed();
-  console.log(inputValue, inputValue.value)
+  props.onSelect(inputValue.value);
 }
 </script>
 
 <template>
   <select
           @change="updateSelect($event); changed();"
-          class="text-black dark:text-white bg-transparent rounded-2xl border-1 border-black dark:border-white theme-light:border-gray focus:outline-0 focus:outline-offset-0 focus:ring-0 focus:ring-offset-0 focus:ring-offset-width-0 focus:shadow-0"
+          class="max-w-32 text-black bg-transparent rounded-2xl border-1 border-black focus:outline-0 focus:outline-offset-0 focus:ring-0 focus:ring-offset-0 focus:ring-offset-width-0 focus:shadow-0"
   >
     <option  v-for="option in options" :key="option.value" v-bind:value="option.value" :selected="option.value === inputValue">{{option.label}}</option>
   </select>

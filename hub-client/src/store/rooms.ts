@@ -17,6 +17,9 @@ import { propCompare } from '@/core/extensions';
 import { YiviSigningSessionResult } from '@/lib/signedMessages';
 import { useUser } from './user';
 import { usePlugins, PluginProperties } from './plugins';
+import {
+	Room as LivekitRoom, VideoPresets,
+} from 'livekit-client';
 
 enum PubHubsRoomType {
 	PH_MESSAGES_RESTRICTED = 'ph.messages.restricted',
@@ -88,6 +91,7 @@ interface PubHubsRoomProperties {
 	unreadMessages: number;
 	userIsScrolling: boolean;
 	videoCallStarted: boolean;
+	livekitRoom: LivekitRoom | null;
 }
 
 class Room extends MatrixRoom {
@@ -104,6 +108,7 @@ class Room extends MatrixRoom {
 			unreadMessages: 0,
 			userIsScrolling: false,
 			videoCallStarted: false,
+			livekitRoom: null
 		};
 	}
 
@@ -122,6 +127,21 @@ class Room extends MatrixRoom {
 	set videoCallStarted(started: boolean) {
 		console.log('updateVideoCallState', this.roomId, started);
 		this._ph.videoCallStarted = started;
+
+		if (started) {
+			this._ph.livekitRoom = new LivekitRoom({
+				// automatically manage subscribed video quality
+				adaptiveStream: true,
+
+				// optimize publishing bandwidth and CPU for published tracks
+				dynacast: true,
+
+				// default capture settings
+				videoCaptureDefaults: {
+					resolution: VideoPresets.h720.resolution,
+				},
+			});
+		}
 	}
 
 	get videoCallStarted(): boolean {

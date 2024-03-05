@@ -194,12 +194,12 @@ const useMessageBox = defineStore('messagebox', {
 						if (filters.removeBackSlash(event.origin) == filters.removeBackSlash(this.receiverUrl)) {
 							const message = new Message(event.data.type, event.data.content);
 
-							console.log('=> ' + this.type + ' RECEIVED unknown message:', message, MessageBoxType);
+							// console.log('=> ' + this.type + ' RECEIVED unknown message:', message, MessageBoxType);
 
 
 							// Answer to handshake as parent
 							if (message.isHandShakeStart() && type == MessageBoxType.Parent) {
-								console.log('<= ' + this.type + ' RECEIVED handshake:', this.receiverUrl);
+								// console.log('<= ' + this.type + ' RECEIVED handshake:', this.receiverUrl);
 								this.sendMessage(new Message(MessageType.HandshakeReady));
 								this.handshake = HandshakeState.Ready;
 								resolve(true);
@@ -207,7 +207,7 @@ const useMessageBox = defineStore('messagebox', {
 
 							// Answer to handshake as child
 							else if (message.isHandShakeReady() && type == MessageBoxType.Child) {
-								console.log('=> ' + this.type + ' RECEIVED', HandshakeState.Ready);
+								// console.log('=> ' + this.type + ' RECEIVED', HandshakeState.Ready);
 								this.handshake = HandshakeState.Ready;
 								resolve(true);
 							}
@@ -219,7 +219,7 @@ const useMessageBox = defineStore('messagebox', {
 							}
 
 							else if(message.isGetAudioDevices()) {
-								console.log('=> ' + this.type + ' RECEIVED', message);
+								// console.log('=> ' + this.type + ' RECEIVED', message);
 								if(type == MessageBoxType.Parent) {
 									this.receivedMessage(message);
 								}
@@ -275,11 +275,11 @@ const useMessageBox = defineStore('messagebox', {
 		 * @param message Message
 		 */
 		sendMessage(message: Message) {
-			console.log('=> ' + this.type + ' SEND', message, this.receiverUrl, this.isConnected);
+			// console.log('=> ' + this.type + ' SEND', message, this.receiverUrl, this.isConnected);
 			if (this.isConnected) {
 				const target = this.resolveTarget();
 				if (target) {
-					console.log('=> ' + this.type + ' SEND', message, this.receiverUrl, target);
+					// console.log('=> ' + this.type + ' SEND', message, this.receiverUrl, target);
 					target.postMessage(message, this.receiverUrl);
 				}
 			}
@@ -293,7 +293,7 @@ const useMessageBox = defineStore('messagebox', {
 		 * @param message Message
 		 */
 		receivedMessage(message: Message) {
-			console.log('<= ' + this.type + ' RECEIVED', message);
+			// console.log('<= ' + this.type + ' RECEIVED', message);
 			if (this.handshake == HandshakeState.Ready) {
 				// console.log('<= ' + this.type + ' RECEIVED', message, callback);
 				const callback = this.callbacks[message.type];
