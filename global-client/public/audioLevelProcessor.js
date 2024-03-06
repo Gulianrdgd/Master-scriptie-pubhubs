@@ -28,13 +28,14 @@ class AudioLevelProcessor extends AudioWorkletProcessor {
             let isClipping = false;
             let lastClip = 0;
             // Calculated the squared-sum.
-            for (let i = 0; i < samples.length; ++i){
+            for (let i = 0; i < samples.length; i++){
                 if(Math.abs(samples[i]) >= clipLevel) {
                     isClipping = true;
                     lastClip = Date.now();
                 }
                 if((lastClip + clipLag) < Date.now()) isClipping = false;
-                sum += samples[i] * samples[i];
+                sum += Math.abs(samples[i]);
+                // sum += samples[i] * samples[i];
             }
 
             // Calculate the RMS level and update the volume.

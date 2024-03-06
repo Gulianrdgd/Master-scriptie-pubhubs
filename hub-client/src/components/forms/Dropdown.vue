@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { PropType } from 'vue';
+import {onMounted, PropType} from 'vue';
 import { Options, useFormInputEvents, usedEvents } from '@/composables/useFormInputEvents';
 
 const props = defineProps({
@@ -29,12 +29,19 @@ function updateSelect(event: Event) {
   changed();
   props.onSelect(inputValue.value);
 }
+
+onMounted(() => {
+  selectOption(inputValue.value);
+  changed();
+  props.onSelect(inputValue.value);
+});
+
 </script>
 
 <template>
   <select
           @change="updateSelect($event); changed();"
-          class="max-w-32 text-black bg-transparent rounded-2xl border-1 border-black focus:outline-0 focus:outline-offset-0 focus:ring-0 focus:ring-offset-0 focus:ring-offset-width-0 focus:shadow-0"
+          class="w-full text-black bg-transparent rounded-2xl border-1 border-black focus:outline-0 focus:outline-offset-0 focus:ring-0 focus:ring-offset-0 focus:ring-offset-width-0 focus:shadow-0"
   >
     <option  v-for="option in options" :key="option.value" v-bind:value="option.value" :selected="option.value === inputValue">{{option.label}}</option>
   </select>

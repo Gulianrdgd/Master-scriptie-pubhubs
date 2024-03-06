@@ -6,10 +6,13 @@ import {onMounted, ref} from "vue";
 import {Room as LivekitRoom} from "livekit-client";
 import VideoCallPreview from "@/components/ui/VideoCallPreview.vue";
 import useVideoCall from "@/store/videoCall";
+import Button from "../../../hub-client/src/components/elements/Button.vue";
 
 let audioOptions = ref<Options>([]);
 let videoOptions = ref<Options>([]);
 const videoCall = useVideoCall();
+
+let connectInputs = ref(false);
 
 onMounted(async () => {
 
@@ -31,20 +34,21 @@ onMounted(async () => {
 </script>
 
 <template>
-  <div class="w-full h-full bg-avatar-orange">
-    <div class="flex justify-center items-center h-screen dark:text-white p-10">
-      <div class="text-center flex items-center justify-center flex-col">
-        <h1 class="text-6xl font-bold mb-8">Starting video call</h1>
-        <VideoCallPreview class="w-3/5 bg-black"/>
-        <div class="flex justify-center items-center">
-          <div class="px-2 max-w-52">
+  <div class="w-full h-full bg-avatar-orange absolute">
+    <div class="flex flex-col justify-center items-center h-screen dark:text-white p-10">
+      <h1 class="text-6xl font-bold mb-8">Starting video call</h1>
+      <Button v-if="!connectInputs"  @click="connectInputs = true">Enable</Button>
+      <div v-if="connectInputs" class="text-center flex items-center justify-center flex-col">
+        <VideoCallPreview/>
+        <div class="flex justify-center items-center w-1/2">
+          <div class="mx-2 w-1/2">
             <h2>Microphone source</h2>
             <Dropdown value="" :options="audioOptions" :on-select="(audioDevice: string) => {
               console.log(audioDevice);
               videoCall.changeAudioDevice(audioDevice);
             }" />
           </div>
-          <div class="px-2 max-w-52">
+          <div class="mx-2 w-1/2">
             <h2>Video source</h2>
             <Dropdown value="" :options="videoOptions" :on-select="(videoDevice: string) => {
               console.log(videoDevice);
@@ -52,7 +56,10 @@ onMounted(async () => {
             }" />
           </div>
         </div>
-        <router-link :to="{ name: 'home' }"><Button>Go back</Button></router-link>
+         <Button @click="() => {
+           videoCall.destroyVideoCall();
+
+         }">Exit</Button>
       </div>
     </div>
   </div>

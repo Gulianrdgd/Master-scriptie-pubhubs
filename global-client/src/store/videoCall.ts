@@ -21,6 +21,7 @@ const useVideoCall = defineStore('videoCall', {
             video_track: null as LocalVideoTrack | null,
             video_devices: [] as MediaDeviceInfo[],
             selected_video_device_id: null as string | null,
+            viewState: 'hidden' as 'hidden' | 'full' | 'mini',
         };
     },
 
@@ -49,6 +50,10 @@ const useVideoCall = defineStore('videoCall', {
             return state.video_track;
         },
 
+        getViewState(state) {
+            return state.viewState;
+        },
+
     },
 
 actions: {
@@ -74,8 +79,14 @@ actions: {
 
         },
 
-        async changeVideoDevice(deviceId: string) {
+        async changeVideoDevice(deviceId: string | null) {
             console.log('changeVideoDevice', deviceId)
+
+            // detach the video track if it exists
+            if(this.video_track) {
+                this.video_track.stop();
+            }
+
             this.selected_video_device_id = deviceId;
 
             if (deviceId) {
@@ -90,14 +101,41 @@ actions: {
             }
         },
 
-        async changeAudioDevice(deviceId: string) {
+        async changeAudioDevice(deviceId: string| null) {
+            console.log('changeAudioDevice', deviceId)
+
+            // detach the audio track if it exists
+            if(this.audio_track) {
+                this.audio_track.stop();
+            }
+
             this.selected_audio_device_id = deviceId;
-            this.audio_track = await createLocalAudioTrack({
-                deviceId: deviceId,
-                echoCancellation: true,
-                noiseSuppression: true
-            });
-        }
+
+            if (deviceId) {
+                this.audio_track = await createLocalAudioTrack({
+                    deviceId: deviceId,
+                    echoCancellation: true,
+                    noiseSuppression: true
+                });
+            }else{
+                this.audio_track = null;
+            }
+        },
+
+        destroyVideoCall() {
+            console.log('destroyVideoCall')
+            this.origin_hub = null;
+            this.token = null;
+            this.target_url = null;
+            this.call_active = false;
+            this.changeAudioDevice(null);
+            this.changeVideoDevice(null);
+            this.viewState = 'hidden';
+        },
+
+        changeViewState(viewState: 'hidden' | 'full' | 'mini') {
+            this.viewState = viewState;
+        },
     },
 });
 

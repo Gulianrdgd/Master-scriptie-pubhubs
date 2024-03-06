@@ -141,6 +141,14 @@ class Room extends MatrixRoom {
 					resolution: VideoPresets.h720.resolution,
 				},
 			});
+
+			console.log("Sending VideoCallShowModal")
+
+			const messagebox = useMessageBox();
+			messagebox.sendMessage(new Message(MessageType.VideoCallShowModal));
+		}else{
+			const messagebox = useMessageBox();
+			messagebox.sendMessage(new Message(MessageType.VideoCallHideModal));
 		}
 	}
 

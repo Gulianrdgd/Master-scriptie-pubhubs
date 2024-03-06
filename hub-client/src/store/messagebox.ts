@@ -59,12 +59,18 @@ enum MessageBoxType {
  */
 const handShakePrefix = 'handshake';
 const modalPrefix = 'dialog-modal';
+const videoCallModalPrefix = 'video-call-modal';
+
 enum MessageType {
 	HandshakeStart = handShakePrefix + '-start', // Start the handshake
 	HandshakeReady = handShakePrefix + '-ready', // Handshake is ready
 
 	DialogShowModal = modalPrefix + '-show', // Show modal over bar
 	DialogHideModal = modalPrefix + '-hide', // Hide modal over bar
+
+	VideoCallShowModal = videoCallModalPrefix + '-full', // Show modal over bar
+	VideoCallHideModal = videoCallModalPrefix + '-hidden', // Hide modal over bar
+	VideoCallMiniModal = videoCallModalPrefix + '-mini', // Show modal over bar
 
 	GetAudioDevices = 'getaudiodevices', // Get audio devices
 	SetAudioDevices = 'setaudiodevices', // Set audio devices
@@ -114,6 +120,10 @@ class Message {
 			return type.substring(0, handShakePrefix.length) == handShakePrefix;
 		}
 		return false;
+	}
+
+	isVideoCallShowModal() {
+		return (this.type == MessageType.VideoCallShowModal || this.type == MessageType.VideoCallHideModal || this.type == MessageType.VideoCallMiniModal)
 	}
 
 	isGetAudioDevices() {
@@ -189,13 +199,11 @@ const useMessageBox = defineStore('messagebox', {
 				// Start listening
 				if (this.isConnected) {
 					this._windowMessageListener = (event: MessageEvent) => {
-
 						// Allways test if message is from expected domain
 						if (filters.removeBackSlash(event.origin) == filters.removeBackSlash(this.receiverUrl)) {
 							const message = new Message(event.data.type, event.data.content);
 
-							// console.log('=> ' + this.type + ' RECEIVED unknown message:', message, MessageBoxType);
-
+							console.log('=> ' + this.type + ' RECEIVED unknown message:', message, MessageBoxType);
 
 							// Answer to handshake as parent
 							if (message.isHandShakeStart() && type == MessageBoxType.Parent) {
@@ -218,18 +226,12 @@ const useMessageBox = defineStore('messagebox', {
 								reject();
 							}
 
-							else if(message.isGetAudioDevices()) {
-								// console.log('=> ' + this.type + ' RECEIVED', message);
-								if(type == MessageBoxType.Parent) {
-									this.receivedMessage(message);
-								}
-								resolve(true);
-							}
-
-							else if(message.isSetAudioDevices() && type == MessageBoxType.Child) {
+							else if(message.isVideoCallShowModal() && type == MessageBoxType.Parent){
 								this.receivedMessage(message);
 								resolve(true);
 							}
+
+
 						}
 					};
 
@@ -275,7 +277,7 @@ const useMessageBox = defineStore('messagebox', {
 		 * @param message Message
 		 */
 		sendMessage(message: Message) {
-			// console.log('=> ' + this.type + ' SEND', message, this.receiverUrl, this.isConnected);
+			console.log('=> ' + this.type + ' SEND', message, this.receiverUrl, this.isConnected);
 			if (this.isConnected) {
 				const target = this.resolveTarget();
 				if (target) {
@@ -293,7 +295,7 @@ const useMessageBox = defineStore('messagebox', {
 		 * @param message Message
 		 */
 		receivedMessage(message: Message) {
-			// console.log('<= ' + this.type + ' RECEIVED', message);
+			console.log('<= ' + this.type + ' RECEIVED', message);
 			if (this.handshake == HandshakeState.Ready) {
 				// console.log('<= ' + this.type + ' RECEIVED', message, callback);
 				const callback = this.callbacks[message.type];

@@ -1,9 +1,9 @@
 import { defineStore } from 'pinia';
 import { RouteParams } from 'vue-router';
 import { Message, MessageBoxType, MessageType, Theme, useGlobal, useMessageBox, useSettings } from '@/store/store';
-import {Room as LivekitRoom} from "livekit-client";
 import { setLanguage, setUpi18n } from '@/i18n';
 import { useToggleMenu } from '@/store/toggleGlobalMenu';
+import useVideoCall from "@/store/videoCall";
 
 // Single Hub
 class Hub {
@@ -158,18 +158,20 @@ const useHubs = defineStore('hubs', {
 							const global = useGlobal();
 							global.showModal();
 						});
+
 						messagebox.addCallback(MessageType.DialogHideModal, () => {
 							const global = useGlobal();
 							global.hideModal();
 						});
 
-						messagebox.addCallback(MessageType.GetAudioDevices, async () => {
-							const devices = await LivekitRoom.getLocalDevices('audioinput');
-							console.log('GetAudioDevices', devices);
-							const deviceList = devices.map((device) => {
-								return { deviceId: device.deviceId, label: device.label };
-							})
-							messagebox.sendMessage(new Message(MessageType.SetAudioDevices, deviceList));
+						messagebox.addCallback(MessageType.VideoCallShowModal, () => {
+							const videoCall = useVideoCall();
+							videoCall.changeViewState('full');
+						});
+
+						messagebox.addCallback(MessageType.VideoCallHideModal, () => {
+							const videoCall = useVideoCall();
+							videoCall.changeViewState('hidden');
 						});
 					}
 				}

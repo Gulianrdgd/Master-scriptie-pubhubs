@@ -9,31 +9,18 @@ const videoCall = useVideoCall();
 const videoSource = computed(() => videoCall.video_track);
 const audioSource = computed(() => videoCall.audio_track);
 
-// const averageAmount = 10;
+const averageAmount = 3;
 
 const currentVolumeLeft = ref(0);
 const currentVolumeRight = ref(0);
 
-// const currentVolumeArray = ref([] as number[]);
-// const currentVolumeIndex = ref(0);
-// const currentVolume = computed(() => {
-//   if (currentVolumeArray.value.length === 0) {
-//     return 0;
-//   }
-//   return currentVolumeArray.value.reduce((a, b) => a + b) / currentVolumeArray.value.length;
-// });
+const currentVolumeArrayLeft = Array(averageAmount).fill(0);
+const currentVolumeArrayRight = Array(averageAmount).fill(0);
+
+let currentVolumeIndex = 0 ;
 
 const audioContext = new AudioContext();
 const analyser = audioContext.createAnalyser();
-
-// function appendToVolumeArray(volume: number) {
-//   if (currentVolumeArray.value.length < averageAmount) {
-//     currentVolumeArray.value.push(volume);
-//   } else {
-//     currentVolumeArray.value[currentVolumeIndex.value] = volume;
-//     currentVolumeIndex.value = (currentVolumeIndex.value + 1) % averageAmount;
-//   }
-// }
 
 watch(videoSource, (videoTrack) => {
   console.log("videoTrack", videoTrack, videoEl)
@@ -47,6 +34,7 @@ watch(videoSource, (videoTrack) => {
 
 watch(audioSource, async (audioTrack) => {
   console.log("audioTrack", audioTrack)
+
   if (audioTrack) {
     // audioTrack.
     if (audioTrack.mediaStream) {
@@ -61,14 +49,27 @@ watch(audioSource, async (audioTrack) => {
       node.port.onmessage = (event) => {
         if (event.data.volume as number[]) {
           if(event.data.volume.length > 0){
-            currentVolumeLeft.value = event.data.volume[0].value * 5;
+            currentVolumeArrayLeft[currentVolumeIndex] = event.data.volume[0].value * 10;
           }else{
-            currentVolumeLeft.value = 0;
+            currentVolumeArrayLeft[currentVolumeIndex] = 0;
           }
           if(event.data.volume.length > 1){
-            currentVolumeRight.value = event.data.volume[1].value * 5;
+            currentVolumeArrayRight[currentVolumeIndex] = event.data.volume[1].value * 10;
           }else{
-            currentVolumeRight.value = 0;
+            currentVolumeArrayLeft[currentVolumeIndex] = 0;
+          }
+          currentVolumeIndex = (currentVolumeIndex + 1) % averageAmount;
+
+          if (currentVolumeIndex === 0) {
+            const left = parseFloat((currentVolumeArrayLeft.reduce((a, b) => a + b) / averageAmount).toFixed(1));
+            const right = parseFloat((currentVolumeArrayRight.reduce((a, b) => a + b) / averageAmount).toFixed(1));
+            if(currentVolumeLeft.value !== left) {
+              currentVolumeLeft.value = left;
+            }
+
+            if(currentVolumeRight.value !== right) {
+              currentVolumeRight.value = right;
+            }
           }
         }
       };
@@ -81,15 +82,19 @@ watch(audioSource, async (audioTrack) => {
 </script>
 
 <template>
-  <video
-      ref="videoEl"
-      muted
-      tabIndex={-1}
-      disablepictureinpicture="true"
-  />
-  <div>
-    <AudioPreview :volume="currentVolumeLeft"/>
-    <AudioPreview :volume="currentVolumeRight"/>
+  <div class="w-full h-full flex flex-col">
+    <div class="w-8/12 h-full aspect-video mb-10 justify-center self-center bg-black">
+      <video
+          ref="videoEl"
+          muted
+          tabIndex={-1}
+          disablepictureinpicture="true"
+      />
+    </div>
+    <div class="">
+      <AudioPreview :volume="currentVolumeLeft"/>
+      <AudioPreview :volume="currentVolumeRight"/>
+    </div>
   </div>
 </template>
 
