@@ -83,6 +83,7 @@ const en = {
 		event: 'Event',
 		discussion: 'Discussion',
 		video_call: 'Video call',
+		roomCreated: 'Discussion created',
 	},
 	settings: {
 		displayname: 'Nickname',

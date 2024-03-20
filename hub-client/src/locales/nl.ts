@@ -83,6 +83,7 @@ const nl = {
 		event: 'Evenement',
 		discussion: 'Discussie',
 		video_call: 'Videogesprek',
+		roomCreated: 'Gesprek aangemaakt',
 	},
 	settings: {
 		displayname: 'Bijnaam',
