@@ -44,6 +44,8 @@ watch(audioSource, async (audioTrack) => {
       const audioSource = audioContext.createMediaStreamSource(audioTrack.mediaStream);
       audioSource.connect(analyser);
 
+      // TODO: Kan wat makkelijker met: https://docs.livekit.io/client-sdk-js/functions/createAudioAnalyser.html
+
       const node = new AudioWorkletNode(audioContext, 'audiolevel');
 
       node.port.onmessage = (event) => {

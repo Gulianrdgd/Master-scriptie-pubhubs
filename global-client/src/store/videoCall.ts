@@ -5,7 +5,8 @@ import {
     createLocalVideoTrack,
     LocalAudioTrack,
     LocalVideoTrack,
-    VideoPresets
+    VideoPresets,
+    Room as LiveKitRoom,
 } from "livekit-client";
 
 const useVideoCall = defineStore('videoCall', {
@@ -13,6 +14,7 @@ const useVideoCall = defineStore('videoCall', {
         return {
             call_active: false,
             origin_hub: null as Hub | null,
+            livekit_room: null as LiveKitRoom | null,
             token: null as string | null,
             target_url: null as string | null,
             audio_track: null as LocalAudioTrack | null,
@@ -57,11 +59,14 @@ const useVideoCall = defineStore('videoCall', {
     },
 
 actions: {
-        joinCall(origin_hub: Hub, token: string, target_url: string) {
+        async joinCall(origin_hub: Hub, token: string, target_url: string) {
             this.origin_hub = origin_hub;
             this.token = token;
             this.target_url = target_url;
             this.call_active = true;
+
+            this.livekit_room = new LiveKitRoom();
+            await this.livekit_room.connect(target_url, token);
         },
 
         leaveCall() {
@@ -96,6 +101,12 @@ actions: {
                     resolution: VideoPresets.h720,
                     deviceId: deviceId
                 });
+
+                if(this.call_active && this.livekit_room && this.video_track){
+                    // @ts-expect-error: I actually don't know why this is TODO!
+                    await this.livekit_room.localParticipant.publishTrack(this.video_track);
+                }
+
             }else{
                 this.video_track = null;
             }
@@ -117,6 +128,11 @@ actions: {
                     echoCancellation: true,
                     noiseSuppression: true
                 });
+
+                if(this.call_active && this.livekit_room && this.audio_track){
+                    // @ts-expect-error: I actually don't know why this is TODO!
+                    await this.livekit_room.localParticipant.publishTrack(this.audio_track);
+                }
             }else{
                 this.audio_track = null;
             }

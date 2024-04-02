@@ -9,6 +9,9 @@ const ReplaceConsole = () => {
 		(org: Function) =>
 		(...args: string[]) => {
 			if (!isProduction) {
+				if(args[1] === "SYNCING"){
+					return;
+				}
 				args.unshift('color:#3EA439;font-weight:bold;');
 				args.unshift('%c[PH');
 				org(...args);

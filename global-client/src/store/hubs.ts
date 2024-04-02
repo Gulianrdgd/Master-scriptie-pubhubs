@@ -165,6 +165,7 @@ const useHubs = defineStore('hubs', {
 						});
 
 						messagebox.addCallback(MessageType.VideoCallShowModal, () => {
+							console.log('VideoCallShowModal');
 							const videoCall = useVideoCall();
 							videoCall.changeViewState('full');
 						});
