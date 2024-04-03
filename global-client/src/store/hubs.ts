@@ -164,8 +164,8 @@ const useHubs = defineStore('hubs', {
 							global.hideModal();
 						});
 
-						messagebox.addCallback(MessageType.VideoCallShowModal, () => {
-							console.log('VideoCallShowModal');
+						messagebox.addCallback(MessageType.VideoCallShowModal, (message: Message) => {
+							console.log('VideoCallShowModal', message);
 							const videoCall = useVideoCall();
 							videoCall.changeViewState('full');
 						});
@@ -174,6 +174,7 @@ const useHubs = defineStore('hubs', {
 							const videoCall = useVideoCall();
 							videoCall.changeViewState('hidden');
 						});
+
 					}
 				}
 			} else {

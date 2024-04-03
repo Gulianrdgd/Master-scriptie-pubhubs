@@ -17,9 +17,9 @@ import { propCompare } from '@/core/extensions';
 import { YiviSigningSessionResult } from '@/lib/signedMessages';
 import { useUser } from './user';
 import { usePlugins, PluginProperties } from './plugins';
-import {
-	Room as LivekitRoom, VideoPresets,
-} from 'livekit-client';
+import {E2EEOptions} from "livekit-client";
+import {MatrixRTCSession, MatrixRTCSessionEvent} from "matrix-js-sdk/lib/matrixrtc/MatrixRTCSession";
+import {VideoCallKeys} from "@/types/videoCallKeys";
 
 enum PubHubsRoomType {
 	PH_MESSAGES_RESTRICTED = 'ph.messages.restricted',
@@ -91,11 +91,16 @@ interface PubHubsRoomProperties {
 	unreadMessages: number;
 	userIsScrolling: boolean;
 	videoCallStarted: boolean;
-	livekitRoom: LivekitRoom | null;
+}
+
+interface VideoCallRoomProperties {
+	videoCallStarted: boolean;
+	roomRTCSession?: MatrixRTCSession;
 }
 
 class Room extends MatrixRoom {
 	_ph: PubHubsRoomProperties;
+	_vc: VideoCallRoomProperties;
 
 	constructor(
 		public readonly roomId: string,
@@ -108,7 +113,9 @@ class Room extends MatrixRoom {
 			unreadMessages: 0,
 			userIsScrolling: false,
 			videoCallStarted: false,
-			livekitRoom: null
+		};
+		this._vc = {
+			videoCallStarted: false,
 		};
 	}
 
@@ -124,33 +131,68 @@ class Room extends MatrixRoom {
 		return this._ph.hidden;
 	}
 
-	set videoCallStarted(started: boolean) {
-		console.log('updateVideoCallState', this.roomId, started);
-		this._ph.videoCallStarted = started;
-
-		if (started) {
-			this._ph.livekitRoom = new LivekitRoom({
-				// automatically manage subscribed video quality
-				adaptiveStream: true,
-
-				// optimize publishing bandwidth and CPU for published tracks
-				dynacast: true,
-
-				// default capture settings
-				videoCaptureDefaults: {
-					resolution: VideoPresets.h720.resolution,
-				},
-			});
-
-			console.log("Sending VideoCallShowModal")
-
-			const messagebox = useMessageBox();
-			messagebox.sendMessage(new Message(MessageType.VideoCallShowModal));
-		}else{
-			const messagebox = useMessageBox();
-			messagebox.sendMessage(new Message(MessageType.VideoCallHideModal));
+	startVideoCall(rtcSession: MatrixRTCSession){
+		console.log("Starting video call in room", this.roomId)
+		if (this._vc.roomRTCSession) {
+			this._vc.roomRTCSession.off(
+				MatrixRTCSessionEvent.EncryptionKeyChanged,
+				this.onEncryptionKeyChanged,
+			);
 		}
+		this._vc.roomRTCSession = rtcSession;
+
+		this._vc.roomRTCSession.on(
+			MatrixRTCSession.Event.EncryptionKeyChanged,
+			this.onEncryptionKeyChanged,
+		);
+
+		// The new session could be aware of keys of which the old session wasn't,
+		// so emit a key changed event.
+		const all_keys: VideoCallKeys = []
+		for (const [
+			participant,
+			encryptionKeys,
+		] of this._vc.roomRTCSession.getEncryptionKeys()) {
+			for (const [index, encryptionKey] of encryptionKeys.entries()) {
+				all_keys.push({encryptionKey: encryptionKey, encryptionKeyIndex: index, participantId: participant})
+			}
+		}
+
+		// TODO: Send keys to messagebox
+
+		this._ph.videoCallStarted = true;
+
+
+		const messagebox = useMessageBox();
+		// TODO: change e2ee options
+		// messagebox.sendMessage(new Message(MessageType.VideoCallShowModal, {roomId: this.roomId, e2eeOptions: e2eeOptions}));
+		console.log("Sending VideoCallShowModal")
 	}
+
+	_onEncryptionKeyChanged = async (
+		encryptionKey: Uint8Array,
+		encryptionKeyIndex: number,
+		participantId: string,
+	): Promise<void> => {
+		// TODO: send key to messagebox
+	}
+
+	stopVideoCall(){
+		console.log("Stopping video call in room", this.roomId)
+		if (this._vc.roomRTCSession) {
+			this._vc.roomRTCSession.off(
+				MatrixRTCSessionEvent.EncryptionKeyChanged,
+				this.onEncryptionKeyChanged,
+			);
+		}
+		this._vc.roomRTCSession = undefined;
+		this._ph.videoCallStarted = false;
+
+		const messagebox = useMessageBox();
+		messagebox.sendMessage(new Message(MessageType.VideoCallHideModal));
+		console.log("Sending VideoCallHideModal")
+	}
+
 
 	get videoCallStarted(): boolean {
 		return this._ph.videoCallStarted;
@@ -557,9 +599,7 @@ const useRooms = defineStore('rooms', {
 			let onlyPseudonymInLogUser = '';
 			// It is a string so better to convert it to an array of mentions.
 			// It could be a single string or an array of strings. Hencce we convert it to an array.
-			// const userIdsInMention: string[] = currentMsgEvent.event.content?.['m.mentions']?.user_ids?.includes(',')
-			// 	? currentMsgEvent.event.content?.['m.mentions']?.user_ids?.split(',')
-			// 	: [currentMsgEvent.event.content?.['m.mentions']?.user_ids];
+
 			const userIdsInMention: string[] = currentMsgEvent.event.content?.['m.mentions']?.user_ids || [];
 
 			const loggedInUserInMention = user.user.displayName!;
@@ -570,7 +610,7 @@ const useRooms = defineStore('rooms', {
 				// XXX: Tightly coupled with pseudonym format.
 				onlyPseudonymInLogUser = loggedInUserInMention.substring(1, 7);
 			}
-			// Only only if you are mentioned!
+			// Only if you are mentioned!
 			for (const element of userIdsInMention) {
 				if (element[0] !== undefined) {
 					if (loggedInUserInMention === element[0] || element[0].includes(onlyPseudonymInLogUser)) {

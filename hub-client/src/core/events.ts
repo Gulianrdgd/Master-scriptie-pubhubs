@@ -21,7 +21,7 @@ class Events {
 	}
 
 	initEvents() {
-		return new Promise((resolve) => {
+		return new Promise( (resolve) => {
 			const self = this;
 			this.client.on(ClientEvent.Sync, (state: SyncState) => {
 				console.debug('STATE:', state);
@@ -54,14 +54,10 @@ class Events {
 
 			// Start client sync
 			const settings = useSettings();
-			this.client.initCrypto().then(
-				() => {
-					this.client.startClient({
-						initialSyncLimit: settings.pagination,
-						includeArchivedRooms: false,
-					});
-				}
-			);
+			this.client.startClient({
+				initialSyncLimit: settings.pagination,
+				includeArchivedRooms: false,
+			});
 		});
 	}
 
@@ -133,7 +129,9 @@ class Events {
 
 		const roomId = call.room.roomId;
 		console.log('roomId', roomId);
-		rooms.rooms[roomId].videoCallStarted = call.state !== 'ended';
+		// rooms.rooms[roomId].videoCallStarted = call.state !== 'ended';
+		rooms.rooms[roomId].startVideoCall();
+		// TODO: Add e2ee
 	}
 }
 

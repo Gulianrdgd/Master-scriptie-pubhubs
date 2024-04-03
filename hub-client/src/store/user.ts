@@ -9,8 +9,7 @@
  */
 
 import { defineStore } from 'pinia';
-import { User as MatrixUser } from 'matrix-js-sdk';
-import { MatrixClient } from 'matrix-js-sdk';
+import { User as MatrixUser, MatrixClient} from 'matrix-js-sdk';
 
 /**
  *  Extending the MatrixUser with some extra PubHubs specific methods :

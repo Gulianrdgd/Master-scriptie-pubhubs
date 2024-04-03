@@ -16,7 +16,6 @@ ReplaceConsole();
 
 const pinia = createPinia();
 const app = createApp(App);
-
 registerComponents(app);
 registerPlugins(app);
 registerPluginComponents(app);

@@ -1,6 +1,4 @@
-import sdk from 'matrix-js-sdk';
-import { MatrixClient } from 'matrix-js-sdk';
-
+import {createClient, MatrixClient} from 'matrix-js-sdk';
 import { User, useUser, useDialog } from '@/store/store';
 
 type loginResponse = {
@@ -64,7 +62,7 @@ class Authentication {
 	 */
 
 	public redirectToPubHubsLogin() {
-		this.client = sdk.createClient({
+		this.client = createClient({
 			baseUrl: this.baseUrl,
 		});
 		this.baseUrl = window.location.href;
@@ -86,10 +84,10 @@ class Authentication {
 				// Start client with token
 				const auth = this._fetchAuth();
 				auth.timelineSupport = true;
-				this.client = sdk.createClient(auth);
+				this.client = createClient(auth);
 			} else {
 				// Start a clean client
-				this.client = sdk.createClient({
+				this.client = createClient({
 					baseUrl: this.baseUrl,
 					timelineSupport: true,
 				});

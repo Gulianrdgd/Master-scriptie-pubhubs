@@ -10,6 +10,7 @@ import {
 	GroupCallIntent
 } from 'matrix-js-sdk';
 
+
 import { Authentication } from '@/core/authentication';
 import { Events } from '@/core/events';
 import { useSettings, User, useUser, useRooms, useConnection, PubHubsRoomType } from '@/store/store';
@@ -19,6 +20,8 @@ import { hasHtml, sanitizeHtml } from '@/core/sanitizer';
 import { api_synapse, api_matrix } from '@/core/api';
 import { M_Mentions, M_MessageEvent, M_TextMessageEventContent } from '@/types/events';
 import { YiviSigningSessionResult } from '@/lib/signedMessages';
+import {MatrixKeyProvider} from "@/lib/matrixKeyProvider";
+
 
 const usePubHubs = defineStore('pubhubs', {
 	state: () => {
@@ -292,8 +295,20 @@ const usePubHubs = defineStore('pubhubs', {
 			console.log(`Creating group call ${roomId}`);
 			const groupCall = this.client.getGroupCallForRoom(roomId);
 			const rooms = useRooms();
+			const calledRoom = rooms.rooms[roomId];
+
+			if (calledRoom == undefined) {
+				return;
+			}
 
 			if(groupCall == undefined) {
+				this.client.matrixRTC.start();
+
+
+				const matrixRTCSessions = this.client.matrixRTC.getRoomSession(calledRoom)
+
+				console.log(matrixRTCSessions);
+
 				await this.client.createGroupCall(
 					roomId,
 					GroupCallType.Video,
@@ -302,12 +317,12 @@ const usePubHubs = defineStore('pubhubs', {
 					true,
 				);
 
-				rooms.rooms[roomId].videoCallStarted = true;
+				calledRoom.startVideoCall(matrixRTCSessions);
 
 			}else{
 				console.log(`Group call already exists for room ${roomId} - TERMINATING CALL`);
 				await groupCall.terminate(true);
-				rooms.rooms[roomId].videoCallStarted = false;
+				calledRoom.stopVideoCall();
 
 			}
 			// const resp = await api_synapse.apiPOST(api_synapse.apiURLS.videoCall, {

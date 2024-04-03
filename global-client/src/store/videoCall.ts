@@ -7,7 +7,52 @@ import {
     LocalVideoTrack,
     VideoPresets,
     Room as LiveKitRoom,
+    RoomOptions,
+    TrackPublishDefaults,
+    AudioPresets,
+    VideoPreset,
+    ScreenSharePresets,
+    DefaultReconnectPolicy, E2EEOptions,
 } from "livekit-client";
+import {MatrixKeyProvider} from "@/core/matrixKeyProvider";
+
+const defaultLiveKitPublishOptions: TrackPublishDefaults = {
+    audioPreset: AudioPresets.music,
+    dtx: true,
+    // disable red because the livekit server strips out red packets for clients
+    // that don't support it (firefox) but of course that doesn't work with e2ee.
+    red: false,
+    forceStereo: false,
+    simulcast: true,
+    videoSimulcastLayers: [VideoPresets.h180, VideoPresets.h360] as VideoPreset[],
+    screenShareEncoding: ScreenSharePresets.h1080fps30.encoding,
+    stopMicTrackOnMute: false,
+    videoCodec: "vp8",
+    videoEncoding: VideoPresets.h720.encoding,
+    backupCodec: { codec: "vp8", encoding: VideoPresets.h720.encoding },
+} as const;
+
+export const defaultLiveKitOptions: RoomOptions = {
+    // automatically manage subscribed video quality
+    adaptiveStream: true,
+
+    // optimize publishing bandwidth and CPU for published tracks
+    dynacast: true,
+
+    // capture settings
+    videoCaptureDefaults: {
+        resolution: VideoPresets.h720.resolution,
+    },
+
+    // publish settings
+    publishDefaults: defaultLiveKitPublishOptions,
+
+    // default LiveKit options that seem to be sane
+    stopLocalTrackOnUnpublish: true,
+    reconnectPolicy: new DefaultReconnectPolicy(),
+    disconnectOnPageLeave: true,
+    webAudioMix: false,
+};
 
 const useVideoCall = defineStore('videoCall', {
     state: () => {
@@ -24,6 +69,7 @@ const useVideoCall = defineStore('videoCall', {
             video_devices: [] as MediaDeviceInfo[],
             selected_video_device_id: null as string | null,
             viewState: 'hidden' as 'hidden' | 'full' | 'mini',
+            options: {...defaultLiveKitOptions} as RoomOptions,
         };
     },
 
@@ -59,13 +105,28 @@ const useVideoCall = defineStore('videoCall', {
     },
 
 actions: {
-        async joinCall(origin_hub: Hub, token: string, target_url: string) {
+        async joinCall(origin_hub: Hub, token: string, target_url: string, e2eeOptions: E2EEOptions | null) {
             this.origin_hub = origin_hub;
             this.token = token;
             this.target_url = target_url;
             this.call_active = true;
 
-            this.livekit_room = new LiveKitRoom();
+            const workerUrl = new URL('./../../node_modules/livekit-client/dist/livekit-client.e2ee.worker.mjs', import.meta.url);
+            console.log(workerUrl);
+            const E2EEWorker = new Worker(workerUrl);
+
+            const e2ee = {
+                keyProvider: new MatrixKeyProvider(),
+                worker: E2EEWorker
+            };
+
+
+            if (e2eeOptions) {
+                this.options.e2ee = e2eeOptions;
+            }
+
+            // @ts-expect-error: I actually don't know why this is TODO!
+            this.livekit_room = new LiveKitRoom(this.options);
             await this.livekit_room.connect(target_url, token);
         },
 
