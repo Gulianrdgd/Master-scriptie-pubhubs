@@ -72,6 +72,10 @@ enum MessageType {
 	VideoCallHideModal = videoCallModalPrefix + '-hidden', // Hide modal over bar
 	VideoCallMiniModal = videoCallModalPrefix + '-mini', // Show modal over bar
 
+	VideoCallStart = videoCallModalPrefix + '-start', // Start video call
+	VideoCallInitKeys = videoCallModalPrefix + "-init-keys", // Init keys for video call
+	VideoCallUpdateKeys = videoCallModalPrefix + "-update-keys", // Update keys for video call
+
 	GetAudioDevices = 'getaudiodevices', // Get audio devices
 	SetAudioDevices = 'setaudiodevices', // Set audio devices
 

@@ -125,13 +125,13 @@ class Events {
 	eventVideoCallState(call: GroupCall) {
 		console.debug('== GroupCallEventHandlerEvent.Incoming', call, call.state !== 'ended');
 
-		const rooms = useRooms();
+		// const rooms = useRooms();
 
 		const roomId = call.room.roomId;
 		console.log('roomId', roomId);
 		// rooms.rooms[roomId].videoCallStarted = call.state !== 'ended';
-		rooms.rooms[roomId].startVideoCall();
-		// TODO: Add e2ee
+		// rooms.rooms[roomId].setUpAndJoinMatrixVideoCall();
+		// TODO: Add video call receive code
 	}
 }
 

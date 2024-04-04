@@ -12,7 +12,6 @@ from . import YiviRoomJoiner
 from ._constants import SERVER_NOTICES_USER, CLIENT_URL
 from ._secured_rooms_class import RoomAttribute
 from ._store import YiviRoomJoinStore
-from .videoCall import *
 
 import json
 

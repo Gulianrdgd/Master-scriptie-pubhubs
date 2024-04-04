@@ -371,6 +371,8 @@ def docker_run_hub_client(image_name, client_number, container_name, client_port
                       "-e", "PARENT_URL=http://localhost:8080",
                       "-d", 
                       "-p", f"{client_port}:8800",
+                      "-p", "7880:7880",
+                      "-p", "50100-50200:50100-50200",
                       image_name]
     print(f"\033[92m{docker_command}\033[0m")
     subprocess.call(docker_command)
@@ -450,7 +452,7 @@ def run_docker_compose(env_value=None, args: str = None) -> None:
     subprocess.call(docker_command)
 
 
-def update_homeserver_yaml(input_path, output_path, client_id, client_secret,client_port, hub_port):
+def update_homeserver_yaml(input_path, output_path, client_id, client_secret,client_port, hub_port, livekit_port):
 
     """
     Write the homeserver.yaml file with the specified client ID, client secret, and client URL.
@@ -486,6 +488,8 @@ def update_homeserver_yaml(input_path, output_path, client_id, client_secret,cli
                     lines[i] = f'{whitespace}client_url: "http://localhost:{client_port}",\n'
                 elif line.strip().startswith('public_baseurl:'):
                     lines[i] = f'{whitespace}public_baseurl: "http://localhost:{hub_port}"\n'
+                elif line.strip().startswith('livekit_url:'):
+                    lines[i] = f'{whitespace}livekit_url: "http://localhost:{livekit_port}"\n'
                 else:
                     lines[i] = f'{whitespace}- port: {hub_port}\n'
 
@@ -752,7 +756,7 @@ def main_runner(cargo_setup:str, node_arg:str, hubs:int = 1) -> None:
         # Create homeserver file with new client id and password, and other import ports
         homeserver_path = os.path.join(hub_data_dir, 'homeserver.yaml')
         update_homeserver_yaml(get_homeserver_path(), homeserver_path,
-                               client_id, client_password, client_port, matrix_port)
+                               client_id, client_password, client_port, matrix_port, livekit_port=7880)
 
         # Change permissions of relevant matrix config directory
         matrix_config_list = [
@@ -983,7 +987,7 @@ public_baseurl: "http://localhost:8080"
 
         try:
             # Call the update_homeserver_yaml function to update the content
-            update_homeserver_yaml(temp_file_path, temp_file_path, new_client_id, new_client_secret, new_client_port, new_hub_port)
+            update_homeserver_yaml(temp_file_path, temp_file_path, new_client_id, new_client_secret, new_client_port, new_hub_port, 7880)
 
             # Read the updated content and assert that it's correct
             with open(temp_file_path, 'r') as updated_file:

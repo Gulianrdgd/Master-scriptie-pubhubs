@@ -7,17 +7,24 @@
  *
  */
 
-import { defineStore } from 'pinia';
-import { Room as MatrixRoom, IPublicRoomsChunkRoom as PublicRoom, MatrixClient, RoomMember, IEvent, MatrixEvent, EventTimeline } from 'matrix-js-sdk';
-import { Message, MessageType, useMessageBox } from './messagebox';
-import { useRouter } from 'vue-router';
-import { api_synapse, api_matrix } from '@/core/api';
-import { usePubHubs } from '@/core/pubhubsStore';
-import { propCompare } from '@/core/extensions';
-import { YiviSigningSessionResult } from '@/lib/signedMessages';
-import { useUser } from './user';
-import { usePlugins, PluginProperties } from './plugins';
-import {E2EEOptions} from "livekit-client";
+import {defineStore} from 'pinia';
+import {
+	EventTimeline, GroupCallIntent, GroupCallType,
+	IEvent,
+	IPublicRoomsChunkRoom as PublicRoom,
+	MatrixClient,
+	MatrixEvent,
+	Room as MatrixRoom,
+	RoomMember
+} from 'matrix-js-sdk';
+import {Message, MessageType, useMessageBox} from './messagebox';
+import {useRouter} from 'vue-router';
+import {api_matrix, api_synapse} from '@/core/api';
+import {usePubHubs} from '@/core/pubhubsStore';
+import {propCompare} from '@/core/extensions';
+import {YiviSigningSessionResult} from '@/lib/signedMessages';
+import {useUser} from './user';
+import {PluginProperties, usePlugins} from './plugins';
 import {MatrixRTCSession, MatrixRTCSessionEvent} from "matrix-js-sdk/lib/matrixrtc/MatrixRTCSession";
 import {VideoCallKeys} from "@/types/videoCallKeys";
 
@@ -131,19 +138,62 @@ class Room extends MatrixRoom {
 		return this._ph.hidden;
 	}
 
-	startVideoCall(rtcSession: MatrixRTCSession){
+	// This function should create listen to the matrixRTCSession and handle the encryption keys
+	// It should also send the keys to the messagebox
+	// Lastly we also need to join the rooms RTC session
+	async setUpAndJoinMatrixVideoCall() {
 		console.log("Starting video call in room", this.roomId)
+
+		let groupCall = this.client.getGroupCallForRoom(this.roomId);
+
+		// FOR DEBUGGING TODO: REMOVE
+		if(groupCall){
+			// TERMINATE AND RETURN
+			console.log("GroupCall already exists", groupCall)
+			await groupCall.terminate();
+			return;
+		}
+
+		// Get matrixRTCSession
+		this.client.matrixRTC.start();
+		const matrixRTCSessions = this.client.matrixRTC.getRoomSession(this)
+		console.log(matrixRTCSessions);
+
+		// Create groupcall if it is not there
+		if (!groupCall) {
+			groupCall = await this.client.createGroupCall(
+				this.roomId,
+				GroupCallType.Video,
+				false,
+				GroupCallIntent.Room,
+				true,
+			);
+
+			// create livekit room
+			const livekitRespons = await api_synapse.apiPOST(api_synapse.apiURLS.videoCall + '?room_id=' + this.roomId, {});
+
+			console.log("Livekit room response!", livekitRespons);
+		}
+
+		// Get Livekit token and URL.
+		const livekitTokenRepons = await api_synapse.apiGET(api_synapse.apiURLS.videoCall + '?room_id=' + this.roomId);
+		console.log("Livekit token response!", livekitTokenRepons);
+
+
+		// Remove old RTCSession if there is one
 		if (this._vc.roomRTCSession) {
 			this._vc.roomRTCSession.off(
 				MatrixRTCSessionEvent.EncryptionKeyChanged,
-				this.onEncryptionKeyChanged,
+				this._onEncryptionKeyChanged,
 			);
 		}
-		this._vc.roomRTCSession = rtcSession;
+
+		// Assign new RTCSession
+		this._vc.roomRTCSession = matrixRTCSessions;
 
 		this._vc.roomRTCSession.on(
-			MatrixRTCSession.Event.EncryptionKeyChanged,
-			this.onEncryptionKeyChanged,
+			MatrixRTCSessionEvent.EncryptionKeyChanged,
+			this._onEncryptionKeyChanged,
 		);
 
 		// The new session could be aware of keys of which the old session wasn't,
@@ -157,16 +207,16 @@ class Room extends MatrixRoom {
 				all_keys.push({encryptionKey: encryptionKey, encryptionKeyIndex: index, participantId: participant})
 			}
 		}
-
-		// TODO: Send keys to messagebox
-
-		this._ph.videoCallStarted = true;
-
-
 		const messagebox = useMessageBox();
-		// TODO: change e2ee options
-		// messagebox.sendMessage(new Message(MessageType.VideoCallShowModal, {roomId: this.roomId, e2eeOptions: e2eeOptions}));
-		console.log("Sending VideoCallShowModal")
+
+		messagebox.sendMessage(new Message(MessageType.VideoCallInitKeys, {roomId: this.roomId, keys: all_keys}));
+		console.log("Sending VideoCallInitKeys");
+
+		messagebox.sendMessage(new Message(MessageType.VideoCallShowModal));
+		console.log("Sending VideoCallShowModal");
+
+		this._vc.roomRTCSession.joinRoomSession([], true);
+		this._ph.videoCallStarted = true;
 	}
 
 	_onEncryptionKeyChanged = async (
@@ -174,16 +224,28 @@ class Room extends MatrixRoom {
 		encryptionKeyIndex: number,
 		participantId: string,
 	): Promise<void> => {
-		// TODO: send key to messagebox
+		if(!this._vc.roomRTCSession){
+			console.error("No RTC Session found for room", this.roomId)
+			return;
+		}
+
+		const messagebox = useMessageBox();
+		messagebox.sendMessage(new Message(MessageType.VideoCallUpdateKeys, {roomId: this.roomId, key: {encryptionKey: encryptionKey, encryptionKeyIndex: encryptionKeyIndex, participantId: participantId}}));
+		console.log(
+			`Sent new key to livekit room=${this._vc.roomRTCSession.room.roomId} participantId=${participantId} encryptionKeyIndex=${encryptionKeyIndex}`,
+		);
 	}
 
-	stopVideoCall(){
+	// This function should remove all the callbacks and remove the RTC session
+	async leaveMatrixVideoCall() {
 		console.log("Stopping video call in room", this.roomId)
 		if (this._vc.roomRTCSession) {
 			this._vc.roomRTCSession.off(
 				MatrixRTCSessionEvent.EncryptionKeyChanged,
-				this.onEncryptionKeyChanged,
+				this._onEncryptionKeyChanged,
 			);
+
+			await this._vc.roomRTCSession.leaveRoomSession(10);
 		}
 		this._vc.roomRTCSession = undefined;
 		this._ph.videoCallStarted = false;

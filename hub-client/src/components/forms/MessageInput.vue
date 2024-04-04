@@ -193,7 +193,7 @@
 
   function startVideoCall() {
     console.log('start video call', rooms.currentRoomId);
-    pubhubs.startVideoCall(rooms.currentRoomId);
+    pubhubs.setupVideoCallRoom(rooms.currentRoomId);
   }
 
 	function submitMessage() {

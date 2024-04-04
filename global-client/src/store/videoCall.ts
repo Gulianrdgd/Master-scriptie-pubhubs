@@ -12,7 +12,7 @@ import {
     AudioPresets,
     VideoPreset,
     ScreenSharePresets,
-    DefaultReconnectPolicy, E2EEOptions,
+    DefaultReconnectPolicy, BaseKeyProvider,
 } from "livekit-client";
 import {MatrixKeyProvider} from "@/core/matrixKeyProvider";
 
@@ -59,9 +59,11 @@ const useVideoCall = defineStore('videoCall', {
         return {
             call_active: false,
             origin_hub: null as Hub | null,
-            livekit_room: null as LiveKitRoom | null,
             token: null as string | null,
             target_url: null as string | null,
+
+            matrix_key_provider: null as MatrixKeyProvider | null,
+            livekit_room: null as LiveKitRoom | null,
             audio_track: null as LocalAudioTrack | null,
             audio_devices: [] as MediaDeviceInfo[],
             selected_audio_device_id: null as string | null,
@@ -105,7 +107,7 @@ const useVideoCall = defineStore('videoCall', {
     },
 
 actions: {
-        async joinCall(origin_hub: Hub, token: string, target_url: string, e2eeOptions: E2EEOptions | null) {
+        async joinCall(origin_hub: Hub, token: string, target_url: string) {
             this.origin_hub = origin_hub;
             this.token = token;
             this.target_url = target_url;
@@ -114,18 +116,18 @@ actions: {
             const workerUrl = new URL('./../../node_modules/livekit-client/dist/livekit-client.e2ee.worker.mjs', import.meta.url);
             console.log(workerUrl);
             const E2EEWorker = new Worker(workerUrl);
+            this.matrix_key_provider = new MatrixKeyProvider();
 
             const e2ee = {
-                keyProvider: new MatrixKeyProvider(),
+                // @ts-expect-error: I actually don't know why this is TODO
+                keyProvider: this.matrix_key_provider as BaseKeyProvider,
                 worker: E2EEWorker
             };
 
 
-            if (e2eeOptions) {
-                this.options.e2ee = e2eeOptions;
-            }
+            this.options.e2ee = e2ee;
 
-            // @ts-expect-error: I actually don't know why this is TODO!
+            // @ts-expect-error: I actually don't know why this is, they should be the same TODO!
             this.livekit_room = new LiveKitRoom(this.options);
             await this.livekit_room.connect(target_url, token);
         },

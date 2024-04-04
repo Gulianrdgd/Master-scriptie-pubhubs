@@ -8,6 +8,8 @@ services:
       dockerfile: Dockerfile
     ports:
       - "8008:8008"
+      - "7880:7880"
+      - "50100-50200:50100-50200"
     environment:
       - HUB_SECRET
       - SYNAPSE_CONFIG_DIR=/data

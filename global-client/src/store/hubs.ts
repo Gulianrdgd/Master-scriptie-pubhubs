@@ -175,6 +175,13 @@ const useHubs = defineStore('hubs', {
 							videoCall.changeViewState('hidden');
 						});
 
+						messagebox.addCallback(MessageType.VideoCallInitKeys, (message: Message) => {
+							// const videoCall = useVideoCall();
+							console.log(message.content);
+							// videoCall.matrix_key_provider?.setInitKeys
+							// TODO: Add code to alter keys to matrixKeyProvider
+						});
+
 					}
 				}
 			} else {

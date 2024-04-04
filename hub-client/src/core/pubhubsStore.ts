@@ -5,9 +5,7 @@ import {
 	MatrixClient,
 	ContentHelpers,
 	MatrixError,
-	IStateEventWithRoomId,
-	GroupCallType,
-	GroupCallIntent
+	IStateEventWithRoomId
 } from 'matrix-js-sdk';
 
 
@@ -20,8 +18,6 @@ import { hasHtml, sanitizeHtml } from '@/core/sanitizer';
 import { api_synapse, api_matrix } from '@/core/api';
 import { M_Mentions, M_MessageEvent, M_TextMessageEventContent } from '@/types/events';
 import { YiviSigningSessionResult } from '@/lib/signedMessages';
-import {MatrixKeyProvider} from "@/lib/matrixKeyProvider";
-
 
 const usePubHubs = defineStore('pubhubs', {
 	state: () => {
@@ -291,45 +287,36 @@ const usePubHubs = defineStore('pubhubs', {
 			await this.client.sendEvent(roomId, 'm.room.message', content);
 		},
 
-		async startVideoCall(roomId: string) {
-			console.log(`Creating group call ${roomId}`);
-			const groupCall = this.client.getGroupCallForRoom(roomId);
+		// High level functions, whe call the function now per room.
+		// TODO: Think about this because then we can have multiple calls per room which is fine, I guess?
+		async setupVideoCallRoom(roomId: string) {
+			console.log(`Creating group call Room ${roomId}`);
 			const rooms = useRooms();
 			const calledRoom = rooms.rooms[roomId];
 
 			if (calledRoom == undefined) {
 				return;
 			}
+			// Setup and join the call
+			calledRoom.setUpAndJoinMatrixVideoCall();
+		},
 
-			if(groupCall == undefined) {
-				this.client.matrixRTC.start();
+		async leaveVideoCall(roomId: string) {
+			const rooms = useRooms();
+			const groupCall = this.client.getGroupCallForRoom(roomId);
+			const calledRoom = rooms.rooms[roomId];
 
-
-				const matrixRTCSessions = this.client.matrixRTC.getRoomSession(calledRoom)
-
-				console.log(matrixRTCSessions);
-
-				await this.client.createGroupCall(
-					roomId,
-					GroupCallType.Video,
-					false,
-					GroupCallIntent.Room,
-					true,
-				);
-
-				calledRoom.startVideoCall(matrixRTCSessions);
-
-			}else{
-				console.log(`Group call already exists for room ${roomId} - TERMINATING CALL`);
-				await groupCall.terminate(true);
-				calledRoom.stopVideoCall();
-
+			if (groupCall && calledRoom) {
+				calledRoom.leaveMatrixVideoCall();
 			}
-			// const resp = await api_synapse.apiPOST(api_synapse.apiURLS.videoCall, {
-			// 	room_id: roomId,
-			// });
+		},
 
-			// console.log(resp);
+		async terminateVideoCall(roomId: string) {
+			const groupCall = this.client.getGroupCallForRoom(roomId);
+			if (groupCall) {
+				await groupCall.terminate(true);
+				// TODO: This terminates the entire call, people should react to that
+			}
 		},
 
 		// Sends acknowledgement to synapse about the message has been read.
