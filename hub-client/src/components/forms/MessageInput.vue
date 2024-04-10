@@ -52,7 +52,7 @@
 		<!-- Sendbutton -->
 		<Button class="h-[50px] min-w-24 ml-2 mr-2 flex items-center rounded-xl" :disabled="!buttonEnabled" @click="submitMessage()"><Icon type="talk" size="sm" class="mr-px mb-1"></Icon>{{ $t(sendMessageText) }}</Button>
 
-    <Button v-if="showVideoCall" class="h-[50px] min-w-24 ml-2 mr-2 flex items-center rounded-xl" @click="startVideoCall()"><Icon type="video-call" size="sm" class="mr-px fill-current stroke-current"></Icon>{{ $t('rooms.video_call') }}</Button>
+    <Button v-if="showVideoCall" class="h-[50px] min-w-24 ml-2 mr-2 flex items-center rounded-xl" @click="startVideoCall()"><Icon type="videocall" size="sm" class="mr-px fill-current stroke-current"></Icon>{{ $t('rooms.video_call') }}</Button>
 
     <!-- Floating menus -->
 		<Mention :msg="value" :top="caretPos.top" :left="caretPos.left" @click="mentionUser($event)"></Mention>

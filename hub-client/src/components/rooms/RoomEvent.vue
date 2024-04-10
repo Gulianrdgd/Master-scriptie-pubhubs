@@ -35,11 +35,12 @@
 				<template v-else>
 					<MessageMention v-if="msgTypeIncludesMention" :message="event.content.body" :users="users"></MessageMention>
 					<button v-if="inReplyTo" @click="onInReplyToClick"><MessageSnippet :event="inReplyTo" :showInReplyTo="true"></MessageSnippet></button>
-					<Message v-if="msgShowBody && !msgTypeIncludesMention" :message="event.content.body" :users="users"></Message>
+					<Message v-if="msgShowBody && !msgTypeIncludesMention && !msgTypeIsVideo " :message="event.content.body" :users="users"></Message>
 					<MessageSigned v-if="event.content.msgtype == 'pubhubs.signed_message'" :message="event.content.signed_message"></MessageSigned>
 					<MessageHtml v-if="msgTypeIsHtml && !msgTypeIncludesMention" :message="(event.content as M_HTMLTextMessageEventContent).formatted_body"></MessageHtml>
 					<MessageFile v-if="event.content.msgtype == 'm.file'" :message="event.content"></MessageFile>
 					<MessageImage v-if="event.content.msgtype == 'm.image'" :message="event.content"></MessageImage>
+          <MessageVideoCall v-if="msgTypeIsVideo" :room_id="event.room_id" :call="event.content as M_VideoMessageEventContent"></MessageVideoCall>
 				</template>
 			</div>
 		</div>
@@ -56,8 +57,9 @@
 	import MessageSnippet from './MessageSnippet.vue';
 	import { useRooms } from '@/store/store';
 	import { PluginType } from '@/store/plugins';
-	import { M_MessageEvent, M_HTMLTextMessageEventContent, M_EventId } from '@/types/events';
+  import {M_MessageEvent, M_HTMLTextMessageEventContent, M_EventId, M_VideoMessageEventContent} from '@/types/events';
 	import { User as MatrixUser } from 'matrix-js-sdk';
+  import MessageVideoCall from "@/components/rooms/MessageVideoCall.vue";
 
 	const hubSettings = useHubSettings();
 	const connection = useConnection();
@@ -116,6 +118,10 @@
 		}
 		return false;
 	});
+
+  const msgTypeIsVideo = computed(() => {
+    return props.event.type == 'org.matrix.msc3401.call';
+  });
 
 	const msgTypeIncludesMention = computed(() => {
 		if (props.event.content.msgtype == 'm.text') {

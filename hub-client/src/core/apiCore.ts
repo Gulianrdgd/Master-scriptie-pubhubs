@@ -68,7 +68,6 @@ class Api {
 			options.headers['Authorization'] = 'Bearer ' + this.accessToken;
 		}
 		const response = await fetch(url, options as RequestInit);
-		console.log("API RESPONSE", response);
 		if (!response.ok) {
 			try {
 				const result = await response.text();

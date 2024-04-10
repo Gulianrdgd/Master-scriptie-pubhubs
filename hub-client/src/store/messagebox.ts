@@ -281,7 +281,7 @@ const useMessageBox = defineStore('messagebox', {
 		 * @param message Message
 		 */
 		sendMessage(message: Message) {
-			console.log('=> ' + this.type + ' SEND', message, this.receiverUrl, this.isConnected);
+			// console.log('=> ' + this.type + ' SEND', message, this.receiverUrl, this.isConnected);
 			if (this.isConnected) {
 				const target = this.resolveTarget();
 				if (target) {
@@ -299,7 +299,7 @@ const useMessageBox = defineStore('messagebox', {
 		 * @param message Message
 		 */
 		receivedMessage(message: Message) {
-			console.log('<= ' + this.type + ' RECEIVED', message);
+			// console.log('<= ' + this.type + ' RECEIVED', message);
 			if (this.handshake == HandshakeState.Ready) {
 				// console.log('<= ' + this.type + ' RECEIVED', message, callback);
 				const callback = this.callbacks[message.type];

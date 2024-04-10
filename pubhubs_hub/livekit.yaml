@@ -1,21 +1,16 @@
 port: 7880
-environment: dev
-bind_addresses:
-  - "0.0.0.0"
 rtc:
-  tcp_port: 7881
-  port_range_start: 50100
-  port_range_end: 50200
-  use_external_ip: false
-turn:
-  enabled: false
-  domain: localhost
-  cert_file: ""
-  key_file: ""
-  tls_port: 5349
-  udp_port: 443
-  external_tls: true
+  # UDP ports to use for client traffic.
+  # this port range should be open for inbound traffic on the firewall
+  port_range_start: 50000
+  port_range_end: 60000
+  # when set, LiveKit enable WebRTC ICE over TCP when UDP isn't available
+  # this port *cannot* be behind load balancer or TLS, and must be exposed on the node
+  # WebRTC transports are encrypted and do not require additional encryption
+  # only 80/443 on public IP are allowed if less than 1024
+  # when set to true, attempts to discover the host's public IP via STUN
+  # this is useful for cloud environments such as AWS & Google where hosts have an internal IP
+  # that maps to an external one
+  use_external_ip: true
 keys:
-  devkey: secret
-signal_relay:
-  enabled: true
+  devkey: YAjhCt37a898NLNEhiKpFY6GG8sXfiTL

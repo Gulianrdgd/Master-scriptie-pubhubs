@@ -10,7 +10,7 @@ const useHubSettings = defineStore('hub-settings', {
 			// @ts-ignore
 			parentUrl: _env.PARENT_URL,
 			isSolo: window.self === window.top,
-			visibleEventTypes: ['m.room.message'],
+			visibleEventTypes: ['m.room.message', 'org.matrix.msc3401.call'],
 			mobileHubMenu: false,
 		};
 	},

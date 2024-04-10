@@ -13,14 +13,12 @@ from ._store import YiviRoomJoinStore
 
 logger = logging.getLogger(__name__)
 
-
 async def _create_room(room_id):
     # Hardcoded url for now, we could have multiple servers up and balance between them.
-
     lkapi = api.LiveKitAPI(
         LIVEKIT_URL,
         'devkey',
-        'secret'
+        'YAjhCt37a898NLNEhiKpFY6GG8sXfiTL'
     )
 
     print("ROOM NAME", room_id)
@@ -31,24 +29,22 @@ async def _create_room(room_id):
 
     print("ROOMS", livekit_rooms)
 
-    for room in livekit_rooms:
+    for room in livekit_rooms.rooms:
         if room.name == room_id:
             return room
 
     room = await lkapi.room.create_room(api.CreateRoomRequest(name=room_id))
 
-    print("ROOM created", room)
+    print("ROOM created", room.name, room.max_participants, room.sid, room.metadata)
     await lkapi.aclose()
 
 
 async def _generate_access_token(pseudonym, username, room_name):
+    print("GENERATE TOKEN, pseudonym", pseudonym, "username", username, "room_name", room_name)
     token = api.AccessToken(
-        'devkey',
-        'secret',
-    ) \
-        .with_identity(pseudonym) \
-        .with_name(username) \
-        .with_grants(api.VideoGrants(room_join=True, room=room_name, )).to_jwt()
+        "devkey",
+        "YAjhCt37a898NLNEhiKpFY6GG8sXfiTL"
+    ).with_grants(api.VideoGrants(room_join=True, room=room_name)).with_identity(pseudonym).with_name(username).to_jwt()
 
     # Hardcoded url for now, we could have multiple servers up and balance between them.
 
@@ -76,7 +72,9 @@ class VideoCallServlet(DirectServeJsonResource):
         user = await self.module_api.get_user_by_req(request)
         room_name = parse_string(request, "room_id")
 
-        token, livekit_url = await _generate_access_token(pseudonym=user, username=user, room_name=room_name)
+        # TODO: username is now the same as pseudonym, should be different
+        # Get the name that the user has requested
+        token, livekit_url = await _generate_access_token(pseudonym=user.authenticated_entity, username=user.authenticated_entity, room_name=room_name)
 
         respond_with_json(request, 200, {"token": token, "livekit_url": livekit_url}, True)
     async def _async_render_POST(self, request: SynapseRequest):

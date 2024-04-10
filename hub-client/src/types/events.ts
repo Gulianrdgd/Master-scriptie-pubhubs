@@ -19,7 +19,7 @@ export interface M_MessageEvent<C extends M_MessageEventContent = M_MessageEvent
 
 interface M_BaseMessageEventContent {
 	body: string;
-	msgtype: 'm.text' | 'm.image' | 'm.file' | 'pubhubs.signed_message';
+	msgtype: 'm.text' | 'm.image' | 'm.file' | 'pubhubs.signed_message' | 'm.video';
 	'm.relates_to'?: {
 		'm.in_reply_to'?: {
 			event_id: string;
@@ -61,9 +61,17 @@ export interface M_SignedMessageEventContent extends M_BaseMessageEventContent {
 	signed_message: SignedMessage;
 }
 
+export interface M_VideoMessageEventContent extends M_BaseMessageEventContent {
+	msgtype: 'm.video';
+	"m.intent": string;
+	"m.terminated"? : string;
+	hide?: boolean;
+	time?: number;
+}
+
 export type M_HTMLTextMessageEventContent = WithRequired<M_TextMessageEventContent, 'format' | 'formatted_body'>;
 
-export type M_MessageEventContent = M_TextMessageEventContent | M_ImageMessageEventContent | M_FileMessageEventContent | M_SignedMessageEventContent;
+export type M_MessageEventContent = M_TextMessageEventContent | M_ImageMessageEventContent | M_FileMessageEventContent | M_SignedMessageEventContent | M_VideoMessageEventContent;
 
 // To be implemented
 type EncryptedFile = any;

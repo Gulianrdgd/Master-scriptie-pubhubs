@@ -372,7 +372,7 @@ def docker_run_hub_client(image_name, client_number, container_name, client_port
                       "-d", 
                       "-p", f"{client_port}:8800",
                       "-p", "7880:7880",
-                      "-p", "50100-50200:50100-50200",
+                      "-p", "50000-60000:50000-60000",
                       image_name]
     print(f"\033[92m{docker_command}\033[0m")
     subprocess.call(docker_command)
