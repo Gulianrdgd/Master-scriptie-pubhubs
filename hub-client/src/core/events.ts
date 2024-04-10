@@ -54,10 +54,20 @@ class Events {
 
 			// Start client sync
 			const settings = useSettings();
-			this.client.startClient({
-				initialSyncLimit: settings.pagination,
-				includeArchivedRooms: false,
-			});
+			this.client.initRustCrypto().then(
+				() => {
+					this.client.startClient({
+						initialSyncLimit: settings.pagination,
+						includeArchivedRooms: false,
+
+					});
+				}
+			);
+
+			// this.client.startClient({
+			// 	initialSyncLimit: settings.pagination,
+			// 	includeArchivedRooms: false,
+			// });
 		});
 	}
 

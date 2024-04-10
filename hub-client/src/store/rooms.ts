@@ -25,8 +25,8 @@ import {propCompare} from '@/core/extensions';
 import {YiviSigningSessionResult} from '@/lib/signedMessages';
 import {useUser} from './user';
 import {PluginProperties, usePlugins} from './plugins';
-import {MatrixRTCSession, MatrixRTCSessionEvent} from "matrix-js-sdk/lib/matrixrtc/MatrixRTCSession";
-import {VideoCallKeys} from "@/types/videoCallKeys";
+import {MatrixRTCSession} from "matrix-js-sdk/lib/matrixrtc/MatrixRTCSession";
+import useVideoCall from "@/store/videoCall";
 
 enum PubHubsRoomType {
 	PH_MESSAGES_RESTRICTED = 'ph.messages.restricted',
@@ -143,16 +143,17 @@ class Room extends MatrixRoom {
 	// Lastly we also need to join the rooms RTC session
 	async setUpAndJoinMatrixVideoCall() {
 		console.log("Starting video call in room", this.roomId)
+		const videoCall = useVideoCall();
 
 		let groupCall = this.client.getGroupCallForRoom(this.roomId);
 
 		// FOR DEBUGGING TODO: REMOVE
-		// if(groupCall){
-		// 	// TERMINATE AND RETURN
-		// 	console.log("GroupCall already exists", groupCall)
-		// 	await groupCall.terminate();
-		// 	return;
-		// }
+		if(groupCall){
+			// TERMINATE AND RETURN
+			console.log("GroupCall already exists", groupCall)
+			await groupCall.terminate();
+			return;
+		}
 
 		// Get matrixRTCSession
 		this.client.matrixRTC.start();
@@ -179,80 +180,27 @@ class Room extends MatrixRoom {
 		const livekitTokenRepons = await api_synapse.apiGET(api_synapse.apiURLS.videoCall + '?room_id=' + this.roomId);
 		console.log("Livekit token response!", livekitTokenRepons);
 
-
-		// Remove old RTCSession if there is one
-		if (this._vc.roomRTCSession) {
-			this._vc.roomRTCSession.off(
-				MatrixRTCSessionEvent.EncryptionKeyChanged,
-				this._onEncryptionKeyChanged,
-			);
-		}
-
 		// Assign new RTCSession
-		this._vc.roomRTCSession = matrixRTCSessions;
+		// this._vc.roomRTCSession = matrixRTCSessions;
 
-		this._vc.roomRTCSession.on(
-			MatrixRTCSessionEvent.EncryptionKeyChanged,
-			this._onEncryptionKeyChanged,
-		);
+		// @ts-expect-error Types are not correct yet TODO
+		await videoCall.joinCall(matrixRTCSessions, livekitTokenRepons.token, livekitTokenRepons.livekit_url);
 
-		// The new session could be aware of keys of which the old session wasn't,
-		// so emit a key changed event.
-		const all_keys: VideoCallKeys = []
-		for (const [
-			participant,
-			encryptionKeys,
-		] of this._vc.roomRTCSession.getEncryptionKeys()) {
-			for (const [index, encryptionKey] of encryptionKeys.entries()) {
-				all_keys.push({encryptionKey: encryptionKey, encryptionKeyIndex: index, participantId: participant})
-			}
-		}
-		const messagebox = useMessageBox();
-
-		messagebox.sendMessage(new Message(MessageType.VideoCallInitKeys, {roomId: this.roomId, keys: all_keys}));
-		console.log("Sending VideoCallInitKeys");
-
-		messagebox.sendMessage(new Message(MessageType.VideoCallShowModal));
-		console.log("Sending VideoCallShowModal");
-
-		this._vc.roomRTCSession.joinRoomSession([], true);
+		matrixRTCSessions.joinRoomSession([], true);
+		// this._vc.roomRTCSession.joinRoomSession([], true);
 		this._ph.videoCallStarted = true;
-	}
-
-	_onEncryptionKeyChanged = async (
-		encryptionKey: Uint8Array,
-		encryptionKeyIndex: number,
-		participantId: string,
-	): Promise<void> => {
-		if(!this._vc.roomRTCSession){
-			console.error("No RTC Session found for room", this.roomId)
-			return;
-		}
-
-		const messagebox = useMessageBox();
-		messagebox.sendMessage(new Message(MessageType.VideoCallUpdateKeys, {roomId: this.roomId, key: {encryptionKey: encryptionKey, encryptionKeyIndex: encryptionKeyIndex, participantId: participantId}}));
-		console.log(
-			`Sent new key to livekit room=${this._vc.roomRTCSession.room.roomId} participantId=${participantId} encryptionKeyIndex=${encryptionKeyIndex}`,
-		);
 	}
 
 	// This function should remove all the callbacks and remove the RTC session
 	async leaveMatrixVideoCall() {
 		console.log("Stopping video call in room", this.roomId)
-		if (this._vc.roomRTCSession) {
-			this._vc.roomRTCSession.off(
-				MatrixRTCSessionEvent.EncryptionKeyChanged,
-				this._onEncryptionKeyChanged,
-			);
+		// await this._vc.roomRTCSession.leaveRoomSession(10);
+		const matrixRTCSessions = this.client.matrixRTC.getRoomSession(this)
+		matrixRTCSessions.leaveRoomSession(10);
 
-			await this._vc.roomRTCSession.leaveRoomSession(10);
-		}
 		this._vc.roomRTCSession = undefined;
 		this._ph.videoCallStarted = false;
 
-		const messagebox = useMessageBox();
-		messagebox.sendMessage(new Message(MessageType.VideoCallHideModal));
-		console.log("Sending VideoCallHideModal")
 	}
 
 
@@ -447,7 +395,6 @@ const useRooms = defineStore('rooms', {
 						for(let i = idx; i >= 0; i--){
 							const previous_event = timeline[i].event as unknown as Event;
 							if(previous_event.event_id === previous_id){
-								console.log("Found previous event", previous_event);
 								previous_event.content.hide = true;
 								event.content.time = event.origin_server_ts - previous_event.origin_server_ts;
 								break;

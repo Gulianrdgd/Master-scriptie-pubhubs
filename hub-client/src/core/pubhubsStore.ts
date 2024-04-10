@@ -299,6 +299,7 @@ const usePubHubs = defineStore('pubhubs', {
 			}
 			// Setup and join the call
 			calledRoom.setUpAndJoinMatrixVideoCall();
+
 		},
 
 		async leaveVideoCall(roomId: string) {

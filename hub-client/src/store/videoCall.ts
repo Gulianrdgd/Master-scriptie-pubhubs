@@ -1,5 +1,4 @@
 import {defineStore} from "pinia";
-import {Hub} from "@/store/hubs";
 import {
     createLocalAudioTrack,
     createLocalVideoTrack,
@@ -15,6 +14,8 @@ import {
     DefaultReconnectPolicy, BaseKeyProvider,
 } from "livekit-client";
 import {MatrixKeyProvider} from "@/core/matrixKeyProvider";
+import {MatrixRTCSession} from "matrix-js-sdk/lib/matrixrtc/MatrixRTCSession";
+import {toRaw} from "vue";
 
 const defaultLiveKitPublishOptions: TrackPublishDefaults = {
     audioPreset: AudioPresets.music,
@@ -58,7 +59,6 @@ const useVideoCall = defineStore('videoCall', {
     state: () => {
         return {
             call_active: false,
-            origin_hub: null as Hub | null,
             token: null as string | null,
             target_url: null as string | null,
 
@@ -78,10 +78,6 @@ const useVideoCall = defineStore('videoCall', {
     getters: {
         isCallActive(state) {
             return state.call_active;
-        },
-
-        getOriginHub(state) {
-            return state.origin_hub;
         },
 
         getToken(state) {
@@ -107,8 +103,7 @@ const useVideoCall = defineStore('videoCall', {
     },
 
 actions: {
-        async joinCall(origin_hub: Hub, token: string, target_url: string) {
-            this.origin_hub = origin_hub;
+        async joinCall(matrixRTC: MatrixRTCSession, token: string, target_url: string) {
             this.token = token;
             this.target_url = target_url;
             this.call_active = true;
@@ -116,24 +111,30 @@ actions: {
             const workerUrl = new URL('./../../node_modules/livekit-client/dist/livekit-client.e2ee.worker.mjs', import.meta.url);
             console.log(workerUrl);
             const E2EEWorker = new Worker(workerUrl);
-            this.matrix_key_provider = new MatrixKeyProvider();
+            const matrix_key_provider = new MatrixKeyProvider();
+
+            matrix_key_provider.setRTCSession(matrixRTC);
 
             const e2ee = {
-                // @ts-expect-error: I actually don't know why this is TODO
-                keyProvider: this.matrix_key_provider as BaseKeyProvider,
+                keyProvider: matrix_key_provider as BaseKeyProvider,
                 worker: E2EEWorker
             };
 
 
             this.options.e2ee = e2ee;
 
+            console.log(this.options)
+
             // @ts-expect-error: I actually don't know why this is, they should be the same TODO!
-            this.livekit_room = new LiveKitRoom(this.options);
+            this.livekit_room = new LiveKitRoom(toRaw(this.options));
+            console.log(target_url, token)
+
             await this.livekit_room.connect(target_url, token);
+
+            console.log("DONE CONNECTING");
         },
 
         leaveCall() {
-            this.origin_hub = null;
             this.token = null;
             this.target_url = null;
             this.call_active = false;
@@ -203,7 +204,6 @@ actions: {
 
         destroyVideoCall() {
             console.log('destroyVideoCall')
-            this.origin_hub = null;
             this.token = null;
             this.target_url = null;
             this.call_active = false;

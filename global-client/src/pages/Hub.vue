@@ -1,19 +1,15 @@
 <template>
-  <VideoCall v-if="videoCall.viewState !== 'hidden'"/>
-	<iframe v-if="hubs.currentHubExists" :src="hubUrl" class="w-full h-full" name="hub" :id="iframeHubId"></iframe>
+	<iframe allow="camera; microphone; display-capture; autoplay; speaker-selection;" v-if="hubs.currentHubExists" :src="hubUrl" class="w-full h-full" name="hub" :id="iframeHubId"></iframe>
 </template>
 
 <script setup lang="ts">
 	import { onMounted, watch, computed } from 'vue';
 	import { useRoute } from 'vue-router';
 	import { iframeHubId, useHubs, useGlobal } from '@/store/store';
-  import VideoCall from "@/pages/videoCall.vue";
-  import useVideoCall from "@/store/videoCall";
 
 	const route = useRoute();
 	const hubs = useHubs();
 	const global = useGlobal();
-  const videoCall = useVideoCall();
 
 	onMounted(() => {
 		hubs.changeHub(route.params);

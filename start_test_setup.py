@@ -371,8 +371,6 @@ def docker_run_hub_client(image_name, client_number, container_name, client_port
                       "-e", "PARENT_URL=http://localhost:8080",
                       "-d", 
                       "-p", f"{client_port}:8800",
-                      "-p", "7880:7880",
-                      "-p", "50000-60000:50000-60000",
                       image_name]
     print(f"\033[92m{docker_command}\033[0m")
     subprocess.call(docker_command)
@@ -419,6 +417,8 @@ def docker_run_hub_server(hub_secret, image_name, container_name, hub_matrix_por
                       "--name", container_name,
                       "-d", 
                       "-p", f"{hub_matrix_port}:{hub_matrix_port}",
+                      "-p", "7880:7880",
+                      "-p", "50000-50010:50000-50010",
                       "-e", f"HUB_SECRET={hub_secret}",
                       *dont_start_hub,
                       "-e", "SYNAPSE_CONFIG_DIR=/data", 

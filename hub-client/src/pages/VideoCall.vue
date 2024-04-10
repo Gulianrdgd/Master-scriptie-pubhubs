@@ -1,12 +1,12 @@
 <script setup lang="ts">
 
-import Dropdown from "@/../../hub-client/src/components/forms/Dropdown.vue";
-import {Options} from '@/../../hub-client/src/composables/useFormInputEvents';
+import Dropdown from "@/components/forms/Dropdown.vue";
+import {Options} from '@/composables/useFormInputEvents';
 import {onMounted, ref} from "vue";
 import {Room as LivekitRoom} from "livekit-client";
 import VideoCallPreview from "@/components/ui/VideoCallPreview.vue";
 import useVideoCall from "@/store/videoCall";
-import Button from "../../../hub-client/src/components/elements/Button.vue";
+import Button from "@/components/elements/Button.vue";
 
 let audioOptions = ref<Options>([]);
 let videoOptions = ref<Options>([]);
@@ -34,7 +34,7 @@ onMounted(async () => {
 </script>
 
 <template>
-  <div class="w-full h-full bg-avatar-orange absolute">
+  <div class="w-full h-full bg-avatar-orange">
     <div class="flex flex-col justify-center items-center h-screen dark:text-white p-10">
       <h1 class="text-6xl font-bold mb-8">Starting video call</h1>
       <Button v-if="!connectInputs"  @click="connectInputs = true">Enable</Button>
