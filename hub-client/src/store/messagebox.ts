@@ -207,7 +207,7 @@ const useMessageBox = defineStore('messagebox', {
 						if (filters.removeBackSlash(event.origin) == filters.removeBackSlash(this.receiverUrl)) {
 							const message = new Message(event.data.type, event.data.content);
 
-							console.log('=> ' + this.type + ' RECEIVED unknown message:', message, MessageBoxType);
+							// console.log('=> ' + this.type + ' RECEIVED unknown message:', message, MessageBoxType);
 
 							// Answer to handshake as parent
 							if (message.isHandShakeStart() && type == MessageBoxType.Parent) {

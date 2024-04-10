@@ -54,10 +54,20 @@ class Events {
 
 			// Start client sync
 			const settings = useSettings();
-			this.client.startClient({
-				initialSyncLimit: settings.pagination,
-				includeArchivedRooms: false,
-			});
+			this.client.initRustCrypto().then(
+				() => {
+					this.client.startClient({
+						initialSyncLimit: settings.pagination,
+						includeArchivedRooms: false,
+
+					});
+				}
+			);
+
+			// this.client.startClient({
+			// 	initialSyncLimit: settings.pagination,
+			// 	includeArchivedRooms: false,
+			// });
 		});
 	}
 
@@ -73,7 +83,11 @@ class Events {
 
 	eventRoomTimeline(event: MatrixEvent, room: MatrixRoom | undefined, toStartOfTimeline: boolean | undefined, removed: boolean) {
 		const rooms = useRooms();
-		console.debug('Room.timeline', toStartOfTimeline, removed);
+		// console.debug('Room.timeline', toStartOfTimeline, removed);
+		if(removed) {
+			console.debug('Room.timeline', toStartOfTimeline, removed);
+			return;
+		}
 
 		if (!room) return;
 

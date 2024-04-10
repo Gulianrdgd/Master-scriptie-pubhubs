@@ -39,12 +39,10 @@ watch(audioSource, async (audioTrack) => {
     // audioTrack.
     if (audioTrack.mediaStream) {
       await audioContext.audioWorklet.addModule(
-          '/client/audioLevelProcessor.js'
+          '/audioLevelProcessor.js'
       );
       const audioSource = audioContext.createMediaStreamSource(audioTrack.mediaStream);
       audioSource.connect(analyser);
-
-      // TODO: Kan wat makkelijker met: https://docs.livekit.io/client-sdk-js/functions/createAudioAnalyser.html
 
       const node = new AudioWorkletNode(audioContext, 'audiolevel');
 

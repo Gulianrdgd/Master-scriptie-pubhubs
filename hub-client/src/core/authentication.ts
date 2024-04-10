@@ -83,8 +83,15 @@ class Authentication {
 			if (auth !== null && auth.baseUrl == this.baseUrl) {
 				// Start client with token
 				const auth = this._fetchAuth();
+				console.log(auth);
 				auth.timelineSupport = true;
 				this.client = createClient(auth);
+				if(auth.deviceId) {
+					this.client.deviceId = auth.deviceId;
+				}else{
+					console.log("ERROR, should never happen")
+					this.client.deviceId = "web"
+				}
 			} else {
 				// Start a clean client
 				this.client = createClient({
@@ -110,6 +117,12 @@ class Authentication {
 				} else {
 					this.client.loginWithToken(this.loginToken).then(
 						(response) => {
+							if(response.device_id) {
+								this.client.deviceId = response.device_id;
+							}else {
+								console.log("ERROR, should never happen")
+								this.client.deviceId = "web";
+							}
 							window.history.pushState('', '', '/');
 							this._storeAuth(response as loginResponse);
 							resolve(this.client);

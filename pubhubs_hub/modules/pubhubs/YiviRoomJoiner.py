@@ -8,6 +8,7 @@ from synapse.module_api import ModuleApi
 from synapse.module_api.errors import ConfigError
 from twisted.web.server import Request
 
+from ._livekit_proxy import LivekitProxyServlet
 from ._videoCall_web import VideoCallServlet
 from ._yivi_proxy import ProxyServlet
 from ._secured_rooms_web import SecuredRoomsServlet, NoticesServlet, SecuredRoomExtraServlet
@@ -118,6 +119,7 @@ class YiviRoomJoiner(object):
 
         api.register_web_resource("/_synapse/client/ph", JoinServlet(self.config, self.module_api, self.store, self))
         api.register_web_resource("/_synapse/client/yiviproxy", ProxyServlet(self.config, self.module_api))
+        api.register_web_resource("/_synapse/client/livekitproxy", LivekitProxyServlet(self.config, self.module_api))
 
         api.register_web_resource(
             "/_synapse/client/secured_rooms",

@@ -82,7 +82,7 @@
 	import { useMatrixFiles } from '@/composables/useMatrixFiles';
 	import { useRooms } from '@/store/store';
 	import { usePubHubs } from '@/core/pubhubsStore';
-	import { useRoute } from 'vue-router';
+  import {useRoute, useRouter} from 'vue-router';
 	import { useMessageActions } from '@/store/message-actions';
 
 	import UploadPicker from '../ui/UploadPicker.vue';
@@ -92,6 +92,7 @@
 	import { YiviSigningSessionResult } from '@/lib/signedMessages';
 	import { fileUpload as uploadHandler } from '@/composables/fileUpload';
 
+  const router = useRouter();
 	const route = useRoute();
 	const rooms = useRooms();
 	const pubhubs = usePubHubs();
@@ -194,6 +195,8 @@
   function startVideoCall() {
     console.log('start video call', rooms.currentRoomId);
     pubhubs.setupVideoCallRoom(rooms.currentRoomId);
+    router.push({ name: 'videocall'});
+
   }
 
 	function submitMessage() {

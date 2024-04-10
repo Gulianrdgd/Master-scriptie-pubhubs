@@ -3,7 +3,6 @@ import { RouteParams } from 'vue-router';
 import { Message, MessageBoxType, MessageType, Theme, useGlobal, useMessageBox, useSettings } from '@/store/store';
 import { setLanguage, setUpi18n } from '@/i18n';
 import { useToggleMenu } from '@/store/toggleGlobalMenu';
-import useVideoCall from "@/store/videoCall";
 
 // Single Hub
 class Hub {
@@ -163,25 +162,6 @@ const useHubs = defineStore('hubs', {
 							const global = useGlobal();
 							global.hideModal();
 						});
-
-						messagebox.addCallback(MessageType.VideoCallShowModal, (message: Message) => {
-							console.log('VideoCallShowModal', message);
-							const videoCall = useVideoCall();
-							videoCall.changeViewState('full');
-						});
-
-						messagebox.addCallback(MessageType.VideoCallHideModal, () => {
-							const videoCall = useVideoCall();
-							videoCall.changeViewState('hidden');
-						});
-
-						messagebox.addCallback(MessageType.VideoCallInitKeys, (message: Message) => {
-							// const videoCall = useVideoCall();
-							console.log(message.content);
-							// videoCall.matrix_key_provider?.setInitKeys
-							// TODO: Add code to alter keys to matrixKeyProvider
-						});
-
 					}
 				}
 			} else {

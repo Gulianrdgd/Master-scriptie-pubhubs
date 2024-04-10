@@ -1,16 +1,19 @@
 <script setup lang="ts">
 
-import Dropdown from "@/../../hub-client/src/components/forms/Dropdown.vue";
-import {Options} from '@/../../hub-client/src/composables/useFormInputEvents';
-import {onMounted, ref} from "vue";
+import Dropdown from "@/components/forms/Dropdown.vue";
+import {Options} from '@/composables/useFormInputEvents';
+import {computed, onMounted, ref} from "vue";
 import {Room as LivekitRoom} from "livekit-client";
 import VideoCallPreview from "@/components/ui/VideoCallPreview.vue";
 import useVideoCall from "@/store/videoCall";
-import Button from "../../../hub-client/src/components/elements/Button.vue";
+import Button from "@/components/elements/Button.vue";
+import {useRouter} from "vue-router";
+import VideoCallBottomBar from "@/components/videocall/videoCallBottomBar.vue";
 
 let audioOptions = ref<Options>([]);
 let videoOptions = ref<Options>([]);
 const videoCall = useVideoCall();
+const router = useRouter();
 
 let connectInputs = ref(false);
 
@@ -31,14 +34,30 @@ onMounted(async () => {
   });
 });
 
+function goBack(){
+  router.back();
+}
+
+function joinRoom(){
+  connectInputs.value = true;
+  videoCall.togglePublishTracks(true);
+}
+
+const remoteParticipants = computed(() => {
+  if(!videoCall.livekit_room){
+    return [];
+  }
+
+  return videoCall.livekit_room.remoteParticipants;
+});
+
 </script>
 
 <template>
-  <div class="w-full h-full bg-avatar-orange absolute">
-    <div class="flex flex-col justify-center items-center h-screen dark:text-white p-10">
+  <div class="w-full h-full bg-avatar-orange">
+    <div v-if="!connectInputs" class="flex flex-col justify-center items-center h-screen dark:text-white p-10">
       <h1 class="text-6xl font-bold mb-8">Starting video call</h1>
-      <Button v-if="!connectInputs"  @click="connectInputs = true">Enable</Button>
-      <div v-if="connectInputs" class="text-center flex items-center justify-center flex-col">
+      <div class="text-center flex items-center justify-center flex-col">
         <VideoCallPreview/>
         <div class="flex justify-center items-center w-1/2">
           <div class="mx-2 w-1/2">
@@ -56,12 +75,16 @@ onMounted(async () => {
             }" />
           </div>
         </div>
-         <Button @click="() => {
-           videoCall.destroyVideoCall();
-
-         }">Exit</Button>
+        <Button @click="joinRoom">Join</Button>
+        <Button @click="goBack">Exit</Button>
       </div>
     </div>
+    <div v-else>
+      <div class="flex flex-col justify-center items-center h-screen dark:text-white p-10">
+        <VideoCallVideoCarrousel/>
+        <VideoCallBottomBar/>
+      </div>
+  </div>
   </div>
 </template>
 

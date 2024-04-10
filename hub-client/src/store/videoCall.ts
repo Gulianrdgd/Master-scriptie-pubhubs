@@ -1,5 +1,4 @@
 import {defineStore} from "pinia";
-import {Hub} from "@/store/hubs";
 import {
     createLocalAudioTrack,
     createLocalVideoTrack,
@@ -15,6 +14,8 @@ import {
     DefaultReconnectPolicy, BaseKeyProvider,
 } from "livekit-client";
 import {MatrixKeyProvider} from "@/core/matrixKeyProvider";
+import {MatrixRTCSession} from "matrix-js-sdk/lib/matrixrtc/MatrixRTCSession";
+import {toRaw} from "vue";
 
 const defaultLiveKitPublishOptions: TrackPublishDefaults = {
     audioPreset: AudioPresets.music,
@@ -58,9 +59,9 @@ const useVideoCall = defineStore('videoCall', {
     state: () => {
         return {
             call_active: false,
-            origin_hub: null as Hub | null,
             token: null as string | null,
             target_url: null as string | null,
+            should_publish_tracks: false,
 
             matrix_key_provider: null as MatrixKeyProvider | null,
             livekit_room: null as LiveKitRoom | null,
@@ -78,10 +79,6 @@ const useVideoCall = defineStore('videoCall', {
     getters: {
         isCallActive(state) {
             return state.call_active;
-        },
-
-        getOriginHub(state) {
-            return state.origin_hub;
         },
 
         getToken(state) {
@@ -104,11 +101,14 @@ const useVideoCall = defineStore('videoCall', {
             return state.viewState;
         },
 
+        getShouldPublishTracks(state) {
+            return state.should_publish_tracks;
+        }
+
     },
 
 actions: {
-        async joinCall(origin_hub: Hub, token: string, target_url: string) {
-            this.origin_hub = origin_hub;
+        async joinCall(matrixRTC: MatrixRTCSession, token: string, target_url: string) {
             this.token = token;
             this.target_url = target_url;
             this.call_active = true;
@@ -116,24 +116,30 @@ actions: {
             const workerUrl = new URL('./../../node_modules/livekit-client/dist/livekit-client.e2ee.worker.mjs', import.meta.url);
             console.log(workerUrl);
             const E2EEWorker = new Worker(workerUrl);
-            this.matrix_key_provider = new MatrixKeyProvider();
+            const matrix_key_provider = new MatrixKeyProvider();
+
+            matrix_key_provider.setRTCSession(matrixRTC);
 
             const e2ee = {
-                // @ts-expect-error: I actually don't know why this is TODO
-                keyProvider: this.matrix_key_provider as BaseKeyProvider,
+                keyProvider: matrix_key_provider as BaseKeyProvider,
                 worker: E2EEWorker
             };
 
 
             this.options.e2ee = e2ee;
 
+            console.log(this.options)
+
             // @ts-expect-error: I actually don't know why this is, they should be the same TODO!
-            this.livekit_room = new LiveKitRoom(this.options);
+            this.livekit_room = new LiveKitRoom(toRaw(this.options));
+            console.log(target_url, token)
+
             await this.livekit_room.connect(target_url, token);
+
+            console.log("DONE CONNECTING");
         },
 
         leaveCall() {
-            this.origin_hub = null;
             this.token = null;
             this.target_url = null;
             this.call_active = false;
@@ -145,6 +151,32 @@ actions: {
             await this.changeAudioDevice(audio_device_id);
             await this.changeVideoDevice(video_device_id);
 
+        },
+
+        async togglePublishTracks(should_publish: boolean) {
+            this.should_publish_tracks = should_publish;
+
+            if(this.should_publish_tracks && this.livekit_room){
+                if(this.audio_track){
+                    // @ts-expect-error: I actually don't know why this is TODO!
+                    await this.livekit_room.localParticipant.publishTrack(this.audio_track);
+                }
+
+                if(this.video_track){
+                    // @ts-expect-error: I actually don't know why this is TODO!
+                    await this.livekit_room.localParticipant.publishTrack(this.video_track);
+                }
+            }else{
+                if(this.audio_track){
+                    // @ts-expect-error: I actually don't know why this is TODO!
+                    await this.livekit_room.localParticipant.unpublishTrack(this.audio_track);
+                }
+
+                if(this.video_track){
+                    // @ts-expect-error: I actually don't know why this is TODO!
+                    await this.livekit_room.localParticipant.unpublishTrack(this.video_track);
+                }
+            }
         },
 
         async changeVideoDevice(deviceId: string | null) {
@@ -165,7 +197,7 @@ actions: {
                     deviceId: deviceId
                 });
 
-                if(this.call_active && this.livekit_room && this.video_track){
+                if(this.call_active && this.should_publish_tracks && this.livekit_room && this.video_track){
                     // @ts-expect-error: I actually don't know why this is TODO!
                     await this.livekit_room.localParticipant.publishTrack(this.video_track);
                 }
@@ -203,7 +235,6 @@ actions: {
 
         destroyVideoCall() {
             console.log('destroyVideoCall')
-            this.origin_hub = null;
             this.token = null;
             this.target_url = null;
             this.call_active = false;

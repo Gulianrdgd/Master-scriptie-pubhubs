@@ -146,6 +146,7 @@
 		// Normal room
 		if (!props.secured) {
 			// Allways new
+      console.log("NEW ROOM")
 			let newRoomOptions = {
 				name: room.room_name,
 				visibility: 'public',
@@ -155,7 +156,8 @@
         power_level_content_override: {
           events: {
             "org.matrix.msc3401.call": 0, // TODO: Should be changed depending on setting
-         }
+            "org.matrix.msc3401.call.member": 0, // TODO: Should be changed depending on setting
+          }
         },
 			};
 			await pubhubs.createRoom(newRoomOptions);
