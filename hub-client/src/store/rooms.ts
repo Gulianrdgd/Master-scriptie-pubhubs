@@ -148,12 +148,12 @@ class Room extends MatrixRoom {
 		let groupCall = this.client.getGroupCallForRoom(this.roomId);
 
 		// FOR DEBUGGING TODO: REMOVE
-		if(groupCall){
-			// TERMINATE AND RETURN
-			console.log("GroupCall already exists", groupCall)
-			await groupCall.terminate();
-			return;
-		}
+		// if(groupCall){
+		// 	// TERMINATE AND RETURN
+		// 	console.log("GroupCall already exists", groupCall)
+		// 	await groupCall.terminate();
+		// 	return;
+		// }
 
 		// Get matrixRTCSession
 		this.client.matrixRTC.start();
@@ -388,7 +388,6 @@ const useRooms = defineStore('rooms', {
 
 					// TODO: Rename function
 					if(event.type === 'org.matrix.msc3401.call' && event.content['m.terminated'] && event.content['m.terminated'] === 'call_ended') {
-						console.log("Found video call event", event);
 
 						const previous_id = event.unsigned.replaces_state;
 

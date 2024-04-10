@@ -83,7 +83,11 @@ class Events {
 
 	eventRoomTimeline(event: MatrixEvent, room: MatrixRoom | undefined, toStartOfTimeline: boolean | undefined, removed: boolean) {
 		const rooms = useRooms();
-		console.debug('Room.timeline', toStartOfTimeline, removed);
+		// console.debug('Room.timeline', toStartOfTimeline, removed);
+		if(removed) {
+			console.debug('Room.timeline', toStartOfTimeline, removed);
+			return;
+		}
 
 		if (!room) return;
 

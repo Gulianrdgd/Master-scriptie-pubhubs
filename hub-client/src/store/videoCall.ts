@@ -61,6 +61,7 @@ const useVideoCall = defineStore('videoCall', {
             call_active: false,
             token: null as string | null,
             target_url: null as string | null,
+            should_publish_tracks: false,
 
             matrix_key_provider: null as MatrixKeyProvider | null,
             livekit_room: null as LiveKitRoom | null,
@@ -99,6 +100,10 @@ const useVideoCall = defineStore('videoCall', {
         getViewState(state) {
             return state.viewState;
         },
+
+        getShouldPublishTracks(state) {
+            return state.should_publish_tracks;
+        }
 
     },
 
@@ -148,6 +153,32 @@ actions: {
 
         },
 
+        async togglePublishTracks(should_publish: boolean) {
+            this.should_publish_tracks = should_publish;
+
+            if(this.should_publish_tracks && this.livekit_room){
+                if(this.audio_track){
+                    // @ts-expect-error: I actually don't know why this is TODO!
+                    await this.livekit_room.localParticipant.publishTrack(this.audio_track);
+                }
+
+                if(this.video_track){
+                    // @ts-expect-error: I actually don't know why this is TODO!
+                    await this.livekit_room.localParticipant.publishTrack(this.video_track);
+                }
+            }else{
+                if(this.audio_track){
+                    // @ts-expect-error: I actually don't know why this is TODO!
+                    await this.livekit_room.localParticipant.unpublishTrack(this.audio_track);
+                }
+
+                if(this.video_track){
+                    // @ts-expect-error: I actually don't know why this is TODO!
+                    await this.livekit_room.localParticipant.unpublishTrack(this.video_track);
+                }
+            }
+        },
+
         async changeVideoDevice(deviceId: string | null) {
             console.log('changeVideoDevice', deviceId)
 
@@ -166,7 +197,7 @@ actions: {
                     deviceId: deviceId
                 });
 
-                if(this.call_active && this.livekit_room && this.video_track){
+                if(this.call_active && this.should_publish_tracks && this.livekit_room && this.video_track){
                     // @ts-expect-error: I actually don't know why this is TODO!
                     await this.livekit_room.localParticipant.publishTrack(this.video_track);
                 }
