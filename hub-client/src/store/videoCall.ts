@@ -16,6 +16,8 @@ import {
 import {MatrixKeyProvider} from "@/core/matrixKeyProvider";
 import {MatrixRTCSession} from "matrix-js-sdk/lib/matrixrtc/MatrixRTCSession";
 import {toRaw} from "vue";
+import {GroupCall} from "matrix-js-sdk/lib/webrtc/groupCall";
+import RemoteParticipant from "livekit-client/dist/src/room/participant/RemoteParticipant";
 
 const defaultLiveKitPublishOptions: TrackPublishDefaults = {
     audioPreset: AudioPresets.music,
@@ -62,6 +64,8 @@ const useVideoCall = defineStore('videoCall', {
             token: null as string | null,
             target_url: null as string | null,
             should_publish_tracks: false,
+            rtc_session: null as MatrixRTCSession | null,
+            groupCall: null as GroupCall | null,
 
             matrix_key_provider: null as MatrixKeyProvider | null,
             livekit_room: null as LiveKitRoom | null,
@@ -103,20 +107,30 @@ const useVideoCall = defineStore('videoCall', {
 
         getShouldPublishTracks(state) {
             return state.should_publish_tracks;
-        }
+        },
 
+        getRemoteParticipants(state) {
+            if(state.livekit_room){
+                return state.livekit_room.remoteParticipants;
+            }else {
+                return new Map<string, RemoteParticipant>();
+            }
+        },
     },
 
 actions: {
-        async joinCall(matrixRTC: MatrixRTCSession, token: string, target_url: string) {
+        async joinCall(matrixRTC: MatrixRTCSession, token: string, target_url: string, groupCall: GroupCall) {
             this.token = token;
             this.target_url = target_url;
             this.call_active = true;
+            this.groupCall = groupCall;
 
             const workerUrl = new URL('./../../node_modules/livekit-client/dist/livekit-client.e2ee.worker.mjs', import.meta.url);
             console.log(workerUrl);
             const E2EEWorker = new Worker(workerUrl);
             const matrix_key_provider = new MatrixKeyProvider();
+
+            this.rtc_session = matrixRTC;
 
             matrix_key_provider.setRTCSession(matrixRTC);
 
@@ -125,8 +139,8 @@ actions: {
                 worker: E2EEWorker
             };
 
-
-            this.options.e2ee = e2ee;
+            console.log(e2ee);
+            // this.options.e2ee = e2ee;
 
             console.log(this.options)
 
@@ -139,12 +153,27 @@ actions: {
             console.log("DONE CONNECTING");
         },
 
-        leaveCall() {
+        async leaveCall() {
             this.token = null;
             this.target_url = null;
             this.call_active = false;
-            this.video_track = null;
-            this.audio_track = null;
+            if(this.livekit_room) {
+                await this.livekit_room.disconnect();
+                this.livekit_room = null;
+            }
+            await this.changeAudioDevice(null);
+            await this.changeVideoDevice(null);
+            if (this.rtc_session) {
+                await this.rtc_session.leaveRoomSession(10);
+                this.rtc_session = null;
+            }
+        },
+
+        async endCall(){
+            if(this.groupCall){
+                await this.groupCall.terminate();
+            }
+            await this.leaveCall();
         },
 
         async getReadyForCall(audio_device_id: string, video_device_id: string) {
@@ -233,19 +262,6 @@ actions: {
             }
         },
 
-        destroyVideoCall() {
-            console.log('destroyVideoCall')
-            this.token = null;
-            this.target_url = null;
-            this.call_active = false;
-            this.changeAudioDevice(null);
-            this.changeVideoDevice(null);
-            this.viewState = 'hidden';
-        },
-
-        changeViewState(viewState: 'hidden' | 'full' | 'mini') {
-            this.viewState = viewState;
-        },
     },
 });
 

@@ -184,7 +184,7 @@ class Room extends MatrixRoom {
 		// this._vc.roomRTCSession = matrixRTCSessions;
 
 		// @ts-expect-error Types are not correct yet TODO
-		await videoCall.joinCall(matrixRTCSessions, livekitTokenRepons.token, livekitTokenRepons.livekit_url);
+		await videoCall.joinCall(matrixRTCSessions, livekitTokenRepons.token, livekitTokenRepons.livekit_url, groupCall);
 
 		matrixRTCSessions.joinRoomSession([], true);
 		// this._vc.roomRTCSession.joinRoomSession([], true);
