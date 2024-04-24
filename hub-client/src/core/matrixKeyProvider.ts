@@ -20,6 +20,10 @@ export class MatrixKeyProvider extends BaseKeyProvider {
 
         this.rtcSession = rtcSession;
 
+        this.rtcSession.off(
+            MatrixRTCSessionEvent.EncryptionKeyChanged,
+            this.onEncryptionKeyChanged,
+        );
         this.rtcSession.on(
             MatrixRTCSessionEvent.EncryptionKeyChanged,
             this.onEncryptionKeyChanged,
@@ -56,4 +60,22 @@ export class MatrixKeyProvider extends BaseKeyProvider {
         //     `Sent new key to livekit room=${this.rtcSession?.room.roomId} participantId=${participantId} encryptionKeyIndex=${encryptionKeyIndex}`,
         // );
     };
+
+    public disableKeyUpdate(){
+        this.rtcSession?.off(
+            MatrixRTCSessionEvent.EncryptionKeyChanged,
+            this.onEncryptionKeyChanged,
+        );
+    }
+
+    public enableKeyUpdate(){
+        this.rtcSession?.off(
+            MatrixRTCSessionEvent.EncryptionKeyChanged,
+            this.onEncryptionKeyChanged,
+        );
+        this.rtcSession?.on(
+            MatrixRTCSessionEvent.EncryptionKeyChanged,
+            this.onEncryptionKeyChanged,
+        );
+    }
 }

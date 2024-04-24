@@ -111,6 +111,7 @@ const useVideoCall = defineStore('videoCall', {
 
         getRemoteParticipants(state) {
             if(state.livekit_room){
+                state.livekit_room.on
                 return state.livekit_room.remoteParticipants;
             }else {
                 return new Map<string, RemoteParticipant>();
@@ -125,22 +126,20 @@ actions: {
             this.call_active = true;
             this.groupCall = groupCall;
 
-            const workerUrl = new URL('./../../node_modules/livekit-client/dist/livekit-client.e2ee.worker.mjs', import.meta.url);
-            console.log(workerUrl);
-            const E2EEWorker = new Worker(workerUrl);
             const matrix_key_provider = new MatrixKeyProvider();
 
             this.rtc_session = matrixRTC;
+            this.matrix_key_provider = matrix_key_provider;
 
             matrix_key_provider.setRTCSession(matrixRTC);
 
             const e2ee = {
                 keyProvider: matrix_key_provider as BaseKeyProvider,
-                worker: E2EEWorker
+                worker: new Worker(new URL('livekit-client/e2ee-worker', import.meta.url))
             };
 
             console.log(e2ee);
-            // this.options.e2ee = e2ee;
+            this.options.e2ee = e2ee;
 
             console.log(this.options)
 
@@ -158,7 +157,7 @@ actions: {
             this.target_url = null;
             this.call_active = false;
             if(this.livekit_room) {
-                await this.livekit_room.disconnect();
+                await this.livekit_room.disconnect(true);
                 this.livekit_room = null;
             }
             await this.changeAudioDevice(null);
@@ -176,11 +175,6 @@ actions: {
             await this.leaveCall();
         },
 
-        async getReadyForCall(audio_device_id: string, video_device_id: string) {
-            await this.changeAudioDevice(audio_device_id);
-            await this.changeVideoDevice(video_device_id);
-
-        },
 
         async togglePublishTracks(should_publish: boolean) {
             this.should_publish_tracks = should_publish;
@@ -212,9 +206,9 @@ actions: {
             console.log('changeVideoDevice', deviceId)
 
             // detach the video track if it exists
-            if(this.video_track) {
-                this.video_track.stop();
-            }
+            // if(this.video_track) {
+            //     this.video_track.stop();
+            // }
 
             this.selected_video_device_id = deviceId;
 
@@ -225,6 +219,8 @@ actions: {
                     resolution: VideoPresets.h720,
                     deviceId: deviceId
                 });
+
+                console.log(this.call_active, this.should_publish_tracks, this.livekit_room, this.video_track)
 
                 if(this.call_active && this.should_publish_tracks && this.livekit_room && this.video_track){
                     // @ts-expect-error: I actually don't know why this is TODO!
@@ -240,9 +236,9 @@ actions: {
             console.log('changeAudioDevice', deviceId)
 
             // detach the audio track if it exists
-            if(this.audio_track) {
-                this.audio_track.stop();
-            }
+            // if(this.audio_track) {
+            //     this.audio_track.stop();
+            // }
 
             this.selected_audio_device_id = deviceId;
 
@@ -261,6 +257,14 @@ actions: {
                 this.audio_track = null;
             }
         },
+
+        disable_e2ee(){
+          this.matrix_key_provider?.disableKeyUpdate();
+        },
+
+        enable_e2ee(){
+            this.matrix_key_provider?.enableKeyUpdate();
+        }
 
     },
 });

@@ -41,7 +41,7 @@ onMounted(() => {
 <template>
   <select
           @change="updateSelect($event); changed();"
-          class="w-full text-black bg-transparent rounded-2xl border-1 border-black focus:outline-0 focus:outline-offset-0 focus:ring-0 focus:ring-offset-0 focus:ring-offset-width-0 focus:shadow-0"
+          class="w-full text-black theme-dark:text-white bg-transparent rounded-2xl border-1 border-black theme-dark:border-white focus:outline-0 focus:outline-offset-0 focus:ring-0 focus:ring-offset-0 focus:ring-offset-width-0 focus:shadow-0"
   >
     <option  v-for="option in options" :key="option.value" v-bind:value="option.value" :selected="option.value === inputValue">{{option.label}}</option>
   </select>

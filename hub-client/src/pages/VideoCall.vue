@@ -2,7 +2,7 @@
 
 import Dropdown from "@/components/forms/Dropdown.vue";
 import {Options} from '@/composables/useFormInputEvents';
-import {onMounted, ref, watch} from "vue";
+import {onMounted, ref} from "vue";
 import {Room as LivekitRoom} from "livekit-client";
 import VideoCallPreview from "@/components/ui/VideoCallPreview.vue";
 import useVideoCall from "@/store/videoCall";
@@ -19,8 +19,8 @@ const router = useRouter();
 
 let connectInputs = ref(false);
 
-onMounted(async () => {
 
+async function findDevices() {
   const audioDevices = await LivekitRoom.getLocalDevices('audioinput');
 
   // @ts-ignore
@@ -34,6 +34,108 @@ onMounted(async () => {
   videoOptions.value = videoDevices.map((device) => {
     return {label: device.label, value: device.deviceId};
   });
+
+}
+
+function syncRemoteParticipants(){
+  const temp: [string, RemoteParticipant][] = [];
+
+  videoCall.livekit_room?.remoteParticipants.forEach((p) => {
+    // @ts-expect-error: Ref error that we have everywhere
+    temp.push([p.identity, p]);
+  });
+  remotes.value = temp;
+}
+
+onMounted(async () => {
+  await findDevices();
+
+  if(!videoCall.livekit_room){
+    return;
+  }
+  syncRemoteParticipants();
+  // videoCall.livekit_room.remoteParticipants.forEach((p) => {
+  //   remotes.value.push([p.identity, p]);
+  // });
+
+  videoCall.livekit_room.removeAllListeners();
+
+  videoCall.livekit_room.on('participantConnected', (participant) => {
+    console.log("Participant connected", participant)
+    // remotes.value.push([participant.identity, participant]);
+    syncRemoteParticipants();
+  });
+
+  videoCall.livekit_room.on('participantDisconnected', (participant) => {
+    console.log("Participant disconnected", participant)
+    syncRemoteParticipants();
+    // remotes.value = remotes.value.filter(([id, _]) => id !== participant.identity);
+  });
+
+
+  videoCall.livekit_room.on('localTrackPublished', (track, participant) => {
+    console.log("Local Published", track, participant);
+    syncRemoteParticipants();
+    // let found = false;
+    //
+    // remotes.value = remotes.value.map(([id, p]) => {
+    //   console.log("Mapping", id, p, participant.identity)
+    //   if (id === participant.identity) {
+    //     found = true;
+    //     return [id, participant];
+    //   }
+    //   return [id, p];
+    // });
+    //
+    // if(!found){
+    //   remotes.value.push([participant.identity, participant]);
+    // }
+  });
+
+  videoCall.livekit_room.on('trackPublished', (track, participant) => {
+    console.log("Published", track, participant);
+    syncRemoteParticipants();
+    // let found = false;
+    //
+    // remotes.value = remotes.value.map(([id, p]) => {
+    //   console.log("Mapping", id, p, participant.identity)
+    //   if (id === participant.identity) {
+    //     found = true;
+    //     return [id, participant];
+    //   }
+    //   return [id, p];
+    // });
+    //
+    // if(!found){
+    //   remotes.value.push([participant.identity, participant]);
+    // }
+
+  });
+
+  videoCall.livekit_room?.on('localTrackUnpublished', (track, participant) => {
+    console.log("Local Unpublished", track, participant);
+    syncRemoteParticipants();
+    //
+    // remotes.value = remotes.value.map(([id, p]) => {
+    //   if (id === participant.identity) {
+    //     return [id, participant];
+    //   }
+    //   return [id, p];
+    // });
+  });
+
+
+  videoCall.livekit_room?.on('trackUnpublished', (track, participant) => {
+    console.log("Unpublished", track, participant);
+    syncRemoteParticipants();
+    // remotes.value = remotes.value.map(([id, p]) => {
+    //   if (id === participant.identity) {
+    //     return [id, participant];
+    //   }
+    //   return [id, p];
+    // });
+  });
+
 });
 
 function goBack(){
@@ -44,25 +146,14 @@ function joinRoom(){
   connectInputs.value = true;
   videoCall.togglePublishTracks(true);
 }
+
 let remotes = ref<[string, RemoteParticipant][]>([]);
 
-
-watch(() => videoCall.livekit_room, (vc) => {
-
-      if(!vc){
-        remotes.value = [];
-        return;
-      }
-
-      remotes.value = Array.from(vc.remoteParticipants);
-
-    }, {deep: true}
-);
 
 </script>
 
 <template>
-  <div class="w-full h-full bg-avatar-orange">
+  <div class="w-full h-full dark:bg-gray-middle">
     <div v-if="!connectInputs" class="flex flex-col justify-center items-center h-full dark:text-white">
       <h1 class="text-6xl font-bold mb-8">Starting video call</h1>
       <div class="text-center flex items-center justify-center flex-col">
@@ -85,6 +176,7 @@ watch(() => videoCall.livekit_room, (vc) => {
         </div>
         <div class="flex gap-2 pt-2 justify-center">
         <Button @click="joinRoom">Join</Button>
+         <Button @click="findDevices">Refresh devices</Button>
         <Button @click="goBack">Exit</Button>
         </div>
       </div>

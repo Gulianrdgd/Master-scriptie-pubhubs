@@ -8,6 +8,14 @@ module.exports = defineConfig({
 				crypto: false,
 			},
 		},
+		module: {  // Add a rules section for workers
+			rules: [
+				{
+					test: /\.e2ee-worker\.(js|ts|jsm)$/, // Targets .e2ee-worker.js, .e2ee-worker.ts, .e2ee-worker.jsm
+					use: { loader: 'worker-loader' }
+				}
+			]
+		}
 	},
 	chainWebpack(config) {
 		config.resolve.symlinks(false);

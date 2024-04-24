@@ -1,27 +1,33 @@
 <script setup lang="ts">
-import RemoteParticipant from "livekit-client/dist/src/room/participant/RemoteParticipant";
-import { ref, watch} from "vue";
+import {onUpdated, ref, watch} from "vue";
 import {Track} from "livekit-client";
 import Icon from "@/components/elements/Icon.vue";
 import UserDisplayName from "@/components/rooms/UserDisplayName.vue";
+import RemoteParticipant from "livekit-client/dist/src/room/participant/RemoteParticipant";
 
 const props = defineProps<{
   username: string;
   remoteParticipant: RemoteParticipant;
 }>();
 
-
-const noVideoTrack = ref(true);
 const videoEl = ref<HTMLVideoElement | null>(null);
 const audioEl = ref<HTMLAudioElement | null>(null);
 
+onUpdated(() => {
+  console.log("Video update", props.remoteParticipant, props.remoteParticipant.getTrackPublications().length );
+});
+
+const noVideoTrack = ref(false);
+
 watch([props.remoteParticipant, videoEl, audioEl], ([remote, videoElement, audioElement]) => {
-  if(!videoElement){
+  console.log("Changed props!");
+  if(!(videoElement && audioElement)){
+    console.log("Not all elements are ready");
     return;
   }
-
+  console.log(remote.getTrackPublications().length);
   const audioTrack = remote.getTrackPublication(Track.Source.Microphone)?.track;
-  console.log("audio track", audioTrack, audioElement)
+  console.log("audio track", audioTrack);
   if (audioElement && audioTrack) {
     audioTrack.attach(audioElement);
   }
@@ -29,13 +35,11 @@ watch([props.remoteParticipant, videoEl, audioEl], ([remote, videoElement, audio
   const videoTrack = remote.getTrackPublication(Track.Source.Camera)?.track;
 
   noVideoTrack.value = !videoTrack;
+  console.log("video track", videoTrack);
 
   if (videoElement && videoTrack) {
     console.log("attaching video track", videoTrack);
     videoTrack.attach(videoElement);
-  }
-  if(!videoElement && videoTrack) {
-    videoTrack.detach();
   }
 
 }, {deep: true});
