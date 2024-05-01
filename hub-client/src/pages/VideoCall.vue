@@ -16,6 +16,7 @@ let audioOptions = ref<Options>([]);
 let videoOptions = ref<Options>([]);
 const videoCall = useVideoCall();
 const router = useRouter();
+// let timer: NodeJS.Timeout | null = null;
 
 let connectInputs = ref(false);
 
@@ -34,7 +35,6 @@ async function findDevices() {
   videoOptions.value = videoDevices.map((device) => {
     return {label: device.label, value: device.deviceId};
   });
-
 }
 
 function syncRemoteParticipants(){
@@ -54,89 +54,52 @@ onMounted(async () => {
     return;
   }
   syncRemoteParticipants();
-  // videoCall.livekit_room.remoteParticipants.forEach((p) => {
-  //   remotes.value.push([p.identity, p]);
-  // });
 
   videoCall.livekit_room.removeAllListeners();
 
   videoCall.livekit_room.on('participantConnected', (participant) => {
     console.log("Participant connected", participant)
-    // remotes.value.push([participant.identity, participant]);
     syncRemoteParticipants();
   });
 
   videoCall.livekit_room.on('participantDisconnected', (participant) => {
     console.log("Participant disconnected", participant)
     syncRemoteParticipants();
-    // remotes.value = remotes.value.filter(([id, _]) => id !== participant.identity);
   });
 
 
   videoCall.livekit_room.on('localTrackPublished', (track, participant) => {
     console.log("Local Published", track, participant);
     syncRemoteParticipants();
-    // let found = false;
-    //
-    // remotes.value = remotes.value.map(([id, p]) => {
-    //   console.log("Mapping", id, p, participant.identity)
-    //   if (id === participant.identity) {
-    //     found = true;
-    //     return [id, participant];
-    //   }
-    //   return [id, p];
-    // });
-    //
-    // if(!found){
-    //   remotes.value.push([participant.identity, participant]);
-    // }
   });
 
   videoCall.livekit_room.on('trackPublished', (track, participant) => {
     console.log("Published", track, participant);
     syncRemoteParticipants();
-    // let found = false;
-    //
-    // remotes.value = remotes.value.map(([id, p]) => {
-    //   console.log("Mapping", id, p, participant.identity)
-    //   if (id === participant.identity) {
-    //     found = true;
-    //     return [id, participant];
-    //   }
-    //   return [id, p];
-    // });
-    //
-    // if(!found){
-    //   remotes.value.push([participant.identity, participant]);
-    // }
-
   });
 
   videoCall.livekit_room?.on('localTrackUnpublished', (track, participant) => {
     console.log("Local Unpublished", track, participant);
     syncRemoteParticipants();
-    //
-    // remotes.value = remotes.value.map(([id, p]) => {
-    //   if (id === participant.identity) {
-    //     return [id, participant];
-    //   }
-    //   return [id, p];
-    // });
   });
 
 
   videoCall.livekit_room?.on('trackUnpublished', (track, participant) => {
     console.log("Unpublished", track, participant);
     syncRemoteParticipants();
-    // remotes.value = remotes.value.map(([id, p]) => {
-    //   if (id === participant.identity) {
-    //     return [id, participant];
-    //   }
-    //   return [id, p];
-    // });
   });
 
+  // timer = setInterval(() => {
+  //   syncRemoteParticipants();
+  // }, 10000)
+
 });
+//
+// onBeforeUnmount(() => {
+//   if(timer) {
+//     clearInterval(timer);
+//   }
+// });
 
 function goBack(){
   router.back();
@@ -145,6 +108,7 @@ function goBack(){
 function joinRoom(){
   connectInputs.value = true;
   videoCall.togglePublishTracks(true);
+  syncRemoteParticipants();
 }
 
 let remotes = ref<[string, RemoteParticipant][]>([]);

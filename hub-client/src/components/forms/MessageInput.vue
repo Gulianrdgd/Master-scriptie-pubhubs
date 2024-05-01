@@ -65,16 +65,12 @@
 		<Button class="h-[50px] min-w-24 ml-2 flex rounded-xl" :disabled="!buttonEnabled" @click="submitMessage()">
 			<div class="m-auto flex gap-2 text-xl content-center"><Icon type="talk" size="sm" class="self-center -scale-100 rotate-45"></Icon>{{ $t(sendMessageText) }}</div>
 		</Button>
-		<Button class="h-[50px] min-w-24 ml-2 mr-2 flex items-center rounded-xl" :disabled="!buttonEnabled" @click="submitMessage()"><Icon type="talk" size="sm" class="mr-px mb-1"></Icon>{{ $t(sendMessageText) }}</Button>
 
     <Button v-if="showVideoCall" class="h-[50px] min-w-24 ml-2 mr-2 flex items-center rounded-xl" @click="startVideoCall()"><Icon type="videocall" size="sm" class="mr-px fill-current stroke-current"></Icon>{{ $t('rooms.video_call') }}</Button>
 
     <!-- Floating menus -->
 		<Mention :msg="value" :top="caretPos.top" :left="caretPos.left" @click="mentionUser($event)"></Mention>
 
-		<Popover v-if="showingUploadPicker" :outside-node="getDocument()" :ignore-click-outside="'openingUploadPicker'" ref="elPopover" @close="showingUploadPicker = false" class="absolute bottom-14">
-			<UploadPicker @attachment="clickedAttachment" @sign="showSigningMessageMenu()"></UploadPicker>
-		</Popover>
 		<!-- todo: move this into UploadPicker? -->
 		<input type="file" :accept="getTypesAsString(allTypes)" class="attach-file" ref="elFileInput" @change="uploadFile($event)" hidden />
 
@@ -91,7 +87,6 @@
 
 <script setup lang="ts">
 	import { watch, ref, onMounted, computed } from 'vue';
-	import {watch, ref, onMounted, onUnmounted, nextTick, computed} from 'vue';
 	import { useFormInputEvents, usedEvents } from '@/composables/useFormInputEvents';
 	import { useMatrixFiles } from '@/composables/useMatrixFiles';
 	import { useRooms } from '@/store/store';
@@ -101,6 +96,7 @@
 
 	import { YiviSigningSessionResult } from '@/lib/signedMessages';
 	import { fileUpload as uploadHandler } from '@/composables/fileUpload';
+  import TextArea from "@/components/forms/TextArea.vue";
 
   const router = useRouter();
 	const route = useRoute();

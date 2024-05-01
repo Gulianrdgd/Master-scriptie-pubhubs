@@ -17,7 +17,6 @@
 											{{ getTopic() }}
 										</span>
 									</p>
-                  <p>{{ currentRoom.videoCallStarted ? "Live" : ""}}</p>
                 </TruncatedText>
 							</div>
 						</div>

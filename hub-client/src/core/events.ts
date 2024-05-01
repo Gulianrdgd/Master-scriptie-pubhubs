@@ -12,7 +12,6 @@ import { TEvent } from '@/model/events/TEvent';
 import { EventTimeLineHandler } from '@/core/eventTimeLineHandler';
 import { useSettings, User, useConnection, useUser, useRooms, Room } from '@/store/store';
 import { usePubHubs } from '@/core/pubhubsStore';
-import {GroupCallEventHandlerEvent} from "matrix-js-sdk/lib/webrtc/groupCallEventHandler";
 import {GroupCall} from "matrix-js-sdk/lib/webrtc/groupCall";
 class Events {
 	private readonly client: MatrixClient;
@@ -53,20 +52,22 @@ class Events {
 
 			// Start client sync
 			const settings = useSettings();
-			this.client.initRustCrypto().then(
-				() => {
-					this.client.startClient({
-						initialSyncLimit: settings.pagination,
-						includeArchivedRooms: false,
+			if(!this.client.deviceId){
+				this.client.deviceId = "web";
+			}
+			// this.client.initRustCrypto().then(
+			// 	() => {
+			// 		this.client.startClient({
+			// 			initialSyncLimit: settings.pagination,
+			// 			includeArchivedRooms: false,
+			// 		});
+			// 	}
+			// );
 
-					});
-				}
-			);
-
-			// this.client.startClient({
-			// 	initialSyncLimit: settings.pagination,
-			// 	includeArchivedRooms: false,
-			// });
+			this.client.startClient({
+				initialSyncLimit: settings.pagination,
+				includeArchivedRooms: false,
+			});
 		});
 	}
 
@@ -85,7 +86,7 @@ class Events {
 		const rooms = useRooms();
 		const phRoom = rooms.addRoom(new Room(matrixRoom));
 
-		if (event.event.type === 'm.room.message' && event.event.content?.msgtype === 'm.text') {
+		if ((event.event.type === 'm.room.message' && event.event.content?.msgtype === 'm.text') || event.event.type === 'org.matrix.msc3401.call') {
 			event.event = eventTimeLineHandler.transformEventContent(event.event as Partial<TEvent>);
 		}
 

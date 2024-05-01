@@ -14,32 +14,35 @@ const videoEl = ref<HTMLVideoElement | null>(null);
 const audioEl = ref<HTMLAudioElement | null>(null);
 
 onUpdated(() => {
-  console.log("Video update", props.remoteParticipant, props.remoteParticipant.getTrackPublications().length );
+  // console.log("Video update", props.remoteParticipant, props.remoteParticipant.getTrackPublications().length );
 });
 
 const noVideoTrack = ref(false);
 
 watch([props.remoteParticipant, videoEl, audioEl], ([remote, videoElement, audioElement]) => {
-  console.log("Changed props!");
+  // console.log("Changed props!");
   if(!(videoElement && audioElement)){
     console.log("Not all elements are ready");
     return;
   }
-  console.log(remote.getTrackPublications().length);
-  const audioTrack = remote.getTrackPublication(Track.Source.Microphone)?.track;
-  console.log("audio track", audioTrack);
-  if (audioElement && audioTrack) {
-    audioTrack.attach(audioElement);
+
+  const remotes_tracks = remote.getTrackPublications();
+  // console.log(remote.getTrackPublications());
+  const audioTracks = remotes_tracks.filter((t) => t.source === Track.Source.Microphone)
+  // console.log("audio tracks", audioTracks);
+  if (audioElement && audioTracks.length > 0) {
+    audioTracks[0].track?.attach(audioElement);
   }
 
-  const videoTrack = remote.getTrackPublication(Track.Source.Camera)?.track;
+  const videoTracks = remotes_tracks.filter((t) => t.source === Track.Source.Camera)
 
-  noVideoTrack.value = !videoTrack;
-  console.log("video track", videoTrack);
+  noVideoTrack.value = videoTracks.length === 0;
+  // console.log("video track", videoTracks);
 
-  if (videoElement && videoTrack) {
-    console.log("attaching video track", videoTrack);
-    videoTrack.attach(videoElement);
+  if (videoElement && videoTracks.length > 0) {
+    // console.log("attaching video track", videoTracks[0]);
+    videoTracks[0].track?.attach(videoElement);
+    
   }
 
 }, {deep: true});

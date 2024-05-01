@@ -17,7 +17,7 @@ interface TBaseMessageEventContent {
 	body: string;
 	// Custom body type, which has all the processed body or formatted body content, for use in our components
 	ph_body: string;
-	msgtype: 'm.text' | 'm.image' | 'm.file' | 'pubhubs.signed_message';
+	msgtype: 'm.text' | 'm.image' | 'm.file' | 'pubhubs.signed_message' | 'm.videocall';
 	'm.relates_to'?: {
 		'm.in_reply_to'?: {
 			event_id: string;
@@ -59,9 +59,20 @@ export interface TSignedMessageEventContent extends TBaseMessageEventContent {
 	signed_message: SignedMessage;
 }
 
+
+export interface TVideoMessageEventContent extends TBaseMessageEventContent {
+	msgtype: 'm.videocall';
+	"m.intent": string;
+	"m.terminated"? : string;
+	hide?: boolean;
+	time?: number;
+}
+
+
+
 export type IHTMLTextMessageEventContent = WithRequired<TTextMessageEventContent, 'format' | 'formatted_body'>;
 
-export type TMessageEventContent = TTextMessageEventContent | TImageMessageEventContent | TFileMessageEventContent | TSignedMessageEventContent;
+export type TMessageEventContent = TTextMessageEventContent | TImageMessageEventContent | TFileMessageEventContent | TSignedMessageEventContent | TVideoMessageEventContent;
 
 // To be implemented
 type EncryptedFile = any;

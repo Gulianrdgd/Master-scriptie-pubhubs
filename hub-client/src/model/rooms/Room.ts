@@ -1,9 +1,19 @@
-import { EventTimeline, MatrixEvent, Room as MatrixRoom, ReceiptType, EventTimelineSet } from 'matrix-js-sdk';
+import {
+	EventTimeline,
+	MatrixEvent,
+	Room as MatrixRoom,
+	ReceiptType,
+	EventTimelineSet,
+	GroupCallIntent, GroupCallType
+} from 'matrix-js-sdk';
 import { useUser } from '@/store/user';
 import { useRooms } from '@/store/rooms';
 import { TBaseEvent } from '../events/TBaseEvent';
 import { TRoomMember } from './TRoomMember';
 import { useI18n } from 'vue-i18n';
+import useVideoCall from "@/store/videoCall";
+import {api_synapse} from "@/core/api";
+import {MatrixRTCSession} from "matrix-js-sdk/lib/matrixrtc/MatrixRTCSession";
 
 enum RoomType {
 	SECURED = 'ph.messages.restricted',
@@ -16,7 +26,7 @@ const BotName = {
 };
 
 /** event filters */
-const visibleEventTypes = ['m.room.message'];
+const visibleEventTypes = ['m.room.message', 'org.matrix.msc3401.call'];
 const invisibleMessageTypes = ['m.notice']; // looking in event.content.msgtype
 const isMessageEvent = (event: MatrixEvent) => event.event.type === 'm.room.message';
 const isVisibleEvent = (event: MatrixEvent) => {
@@ -44,6 +54,9 @@ export default class Room {
 	private userStore;
 	private roomsStore;
 
+	// MatrixRTCSession
+	public roomRTCSession: MatrixRTCSession	| null;
+
 	constructor(matrixRoom: MatrixRoom) {
 		this.matrixRoom = matrixRoom;
 		this.hidden = false;
@@ -52,6 +65,8 @@ export default class Room {
 
 		this.userStore = useUser();
 		this.roomsStore = useRooms();
+
+		this.roomRTCSession = null;
 	}
 
 	//#region getters and setters
@@ -381,6 +396,76 @@ export default class Room {
 			}
 		}
 
+		return false;
+	}
+
+	// This function should create listen to the matrixRTCSession and handle the encryption keys
+	// It should also send the keys to the messagebox
+	// Lastly we also need to join the rooms RTC session
+	public async setUpAndJoinMatrixVideoCall() {
+		console.log("Starting video call in room", this.roomId)
+		const videoCall = useVideoCall();
+
+		let groupCall = this.matrixRoom.client.getGroupCallForRoom(this.roomId);
+		console.log("GroupCall", groupCall)
+		// FOR DEBUGGING TODO: REMOVE
+		// if(groupCall){
+		// 	// TERMINATE AND RETURN
+		// 	console.log("GroupCall already exists", groupCall)
+		// 	await groupCall.terminate();
+		// 	return;
+		// }
+
+		// Get matrixRTCSession
+		this.matrixRoom.client.matrixRTC.start();
+		const matrixRTCSessions = this.matrixRoom.client.matrixRTC.getRoomSession(this.matrixRoom)
+		console.log(matrixRTCSessions);
+
+		// Create groupcall if it is not there
+		if (!groupCall) {
+			groupCall = await this.matrixRoom.client.createGroupCall(
+				this.roomId,
+				GroupCallType.Video,
+				false,
+				GroupCallIntent.Room,
+				true,
+			);
+
+			// create livekit room
+			const livekitRespons = await api_synapse.apiPOST(api_synapse.apiURLS.videoCall + '?room_id=' + this.roomId, {});
+
+			console.log("Livekit room response!", livekitRespons);
+		}
+
+		// Get Livekit token and URL.
+		const livekitTokenRepons = await api_synapse.apiGET(api_synapse.apiURLS.videoCall + '?room_id=' + this.roomId);
+		console.log("Livekit token response!", livekitTokenRepons);
+
+		// Assign new RTCSession
+		this.roomRTCSession = matrixRTCSessions;
+
+		// @ts-expect-error Types are not correct yet TODO
+		await videoCall.joinCall(matrixRTCSessions, livekitTokenRepons.token, livekitTokenRepons.livekit_url, groupCall);
+
+		matrixRTCSessions.joinRoomSession([], true);
+		// this.roomRTCSession.joinRoomSession([], true);
+		// this._ph.videoCallStarted = true;
+	}
+
+	// This function should remove all the callbacks and remove the RTC session
+	public async leaveMatrixVideoCall() {
+		console.log("Stopping video call in room", this.roomId)
+		// await this._vc.roomRTCSession.leaveRoomSession(10);
+		const matrixRTCSessions = this.matrixRoom.client.matrixRTC.getRoomSession(this.matrixRoom)
+		matrixRTCSessions.leaveRoomSession(10);
+
+		this.roomRTCSession = null;
+		// this._ph.videoCallStarted = false;
+
+	}
+
+
+	get videoCallStarted(): boolean {
 		return false;
 	}
 

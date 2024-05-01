@@ -47,7 +47,8 @@
 					<MessageSigned v-if="event.content.msgtype == 'pubhubs.signed_message'" :message="event.content.signed_message"></MessageSigned>
 					<MessageFile v-if="event.content.msgtype == 'm.file'" :message="event.content"></MessageFile>
 					<MessageImage v-if="event.content.msgtype == 'm.image'" :message="event.content"></MessageImage>
-          <MessageVideoCall v-if="msgTypeIsVideo" :room_id="event.room_id" :call="event.content as M_VideoMessageEventContent"></MessageVideoCall>
+<!--          TODO: Check if this msg type is correct-->
+          <MessageVideoCall v-if="event.content.msgtype == 'm.videocall'" :room_id="event.room_id" :call="event.content"></MessageVideoCall>
 				</template>
 			</div>
 		</div>
@@ -64,7 +65,6 @@
 	import { PluginType } from '@/store/plugins';
 	import { TMessageEvent } from '@/model/model';
 	import { useSettings, featureFlagType } from '@/store/store';
-	import { User as MatrixUser } from 'matrix-js-sdk';
   import MessageVideoCall from "@/components/rooms/MessageVideoCall.vue";
 
 	const settings = useSettings();
@@ -111,4 +111,7 @@
 	window.setTimeout(() => {
 		timerReady.value = true;
 	}, 1000);
+
+  console.log(props.event)
+
 </script>

@@ -14,3 +14,6 @@ rtc:
   use_external_ip: true
 keys:
   devkey: YAjhCt37a898NLNEhiKpFY6GG8sXfiTL
+logging:
+   # log level, valid values: debug, info, warn, error
+  level: debug

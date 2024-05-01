@@ -52,9 +52,9 @@ export class MatrixKeyProvider extends BaseKeyProvider {
             encryptionKeyIndex,
         );
 
-        console.log(
-            `Sent new key to livekit room=${this.rtcSession?.room.roomId} participantId=${participantId} encryptionKeyIndex=${encryptionKeyIndex}`,
-        );
+        // console.log(
+        //     `Sent new key to livekit room=${this.rtcSession?.room.roomId} participantId=${participantId} encryptionKeyIndex=${encryptionKeyIndex}`,
+        // );
 
         // logger.debug(
         //     `Sent new key to livekit room=${this.rtcSession?.room.roomId} participantId=${participantId} encryptionKeyIndex=${encryptionKeyIndex}`,

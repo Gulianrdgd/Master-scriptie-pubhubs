@@ -11,7 +11,7 @@ import {
     AudioPresets,
     VideoPreset,
     ScreenSharePresets,
-    DefaultReconnectPolicy, BaseKeyProvider,
+    DefaultReconnectPolicy,
 } from "livekit-client";
 import {MatrixKeyProvider} from "@/core/matrixKeyProvider";
 import {MatrixRTCSession} from "matrix-js-sdk/lib/matrixrtc/MatrixRTCSession";
@@ -133,19 +133,18 @@ actions: {
 
             matrix_key_provider.setRTCSession(matrixRTC);
 
-            const e2ee = {
-                keyProvider: matrix_key_provider as BaseKeyProvider,
-                worker: new Worker(new URL('livekit-client/e2ee-worker', import.meta.url))
-            };
-
-            console.log(e2ee);
-            this.options.e2ee = e2ee;
+            // const e2ee = {
+            //     keyProvider: matrix_key_provider as BaseKeyProvider,
+            //     worker: new Worker(new URL('livekit-client/e2ee-worker', import.meta.url))
+            // };
+            //
+            // console.log(e2ee);
+            // this.options.e2ee = e2ee;
 
             console.log(this.options)
 
             // @ts-expect-error: I actually don't know why this is, they should be the same TODO!
             this.livekit_room = new LiveKitRoom(toRaw(this.options));
-            console.log(target_url, token)
 
             await this.livekit_room.connect(target_url, token);
 
@@ -158,7 +157,9 @@ actions: {
             this.call_active = false;
             if(this.livekit_room) {
                 await this.livekit_room.disconnect(true);
+                await this.togglePublishTracks(false);
                 this.livekit_room = null;
+
             }
             await this.changeAudioDevice(null);
             await this.changeVideoDevice(null);
@@ -189,15 +190,21 @@ actions: {
                     // @ts-expect-error: I actually don't know why this is TODO!
                     await this.livekit_room.localParticipant.publishTrack(this.video_track);
                 }
+
             }else{
+
                 if(this.audio_track){
+                    console.log('unpublishing audio track')
                     // @ts-expect-error: I actually don't know why this is TODO!
                     await this.livekit_room.localParticipant.unpublishTrack(this.audio_track);
+                    // this.audio_track.stop();
                 }
 
                 if(this.video_track){
+                    console.log('unpublishing video track')
                     // @ts-expect-error: I actually don't know why this is TODO!
                     await this.livekit_room.localParticipant.unpublishTrack(this.video_track);
+                    // this.video_track.stop();
                 }
             }
         },
@@ -218,11 +225,13 @@ actions: {
                     // preset resolutions
                     resolution: VideoPresets.h720,
                     deviceId: deviceId
+
                 });
 
                 console.log(this.call_active, this.should_publish_tracks, this.livekit_room, this.video_track)
 
                 if(this.call_active && this.should_publish_tracks && this.livekit_room && this.video_track){
+                    console.log("PUBLISHING VIDEO TRACK");
                     // @ts-expect-error: I actually don't know why this is TODO!
                     await this.livekit_room.localParticipant.publishTrack(this.video_track);
                 }
@@ -249,7 +258,8 @@ actions: {
                     noiseSuppression: true
                 });
 
-                if(this.call_active && this.livekit_room && this.audio_track){
+                if(this.call_active && this.should_publish_tracks && this.livekit_room && this.audio_track){
+                    console.log("PUBLISHING VIDEO TRACK");
                     // @ts-expect-error: I actually don't know why this is TODO!
                     await this.livekit_room.localParticipant.publishTrack(this.audio_track);
                 }
