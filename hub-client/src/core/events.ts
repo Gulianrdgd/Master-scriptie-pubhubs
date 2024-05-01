@@ -8,23 +8,28 @@ import {
 	RoomMemberEvent,
 	RoomMember,
 } from 'matrix-js-sdk';
-
-import { useSettings, User, useConnection, useUser, useRooms } from '@/store/store';
+import { TEvent } from '@/model/events/TEvent';
+import { EventTimeLineHandler } from '@/core/eventTimeLineHandler';
+import { useSettings, User, useConnection, useUser, useRooms, Room } from '@/store/store';
 import { usePubHubs } from '@/core/pubhubsStore';
 import {GroupCallEventHandlerEvent} from "matrix-js-sdk/lib/webrtc/groupCallEventHandler";
 import {GroupCall} from "matrix-js-sdk/lib/webrtc/groupCall";
 class Events {
-	private client: MatrixClient;
+	private readonly client: MatrixClient;
+	private readonly eventTimeHandler = new EventTimeLineHandler();
 
 	public constructor(client: MatrixClient) {
 		this.client = client;
+		this.client.on(RoomEvent.Name, this.eventRoomName);
+		this.client.on(RoomEvent.Timeline, (event: MatrixEvent, matrixRoom: MatrixRoom | undefined, toStartOfTimeline: boolean | undefined) => this.eventRoomTimeline(this.eventTimeHandler, event, matrixRoom, toStartOfTimeline));
+		this.client.on(RoomMemberEvent.Name, this.eventRoomMemberName);
+		this.client.on(RoomMemberEvent.Membership, this.eventRoomMemberMembership(this.client));
 	}
 
 	initEvents() {
 		return new Promise( (resolve) => {
-			const self = this;
 			this.client.on(ClientEvent.Sync, (state: SyncState) => {
-				console.debug('STATE:', state);
+				// console.debug('STATE:', state);
 
 				const connection = useConnection();
 				if (state == 'ERROR') {
@@ -36,18 +41,12 @@ class Events {
 				if (state == 'SYNCING') {
 					connection.on();
 				}
-				console.debug('STATE:', state);
 				if (state == 'PREPARED') {
 					// DEBUGGING purpose - To understand the following events.
 					// this.client.on('event' as any, (event: any) => {
 					// 	console.debug('== EVENT', event.getType());
 					// 	console.debug('== EVENT', event);
 					// });
-					this.client.on(RoomEvent.Name, self.eventRoomName);
-					this.client.on(RoomEvent.Timeline, self.eventRoomTimeline);
-					this.client.on(RoomMemberEvent.Name, self.eventRoomMemberName);
-					this.client.on(RoomMemberEvent.Membership, self.eventRoomMemberMembership(this.client));
-					this.client.on(GroupCallEventHandlerEvent.Incoming, self.eventVideoCallState);
 					resolve(true);
 				}
 			});
@@ -75,38 +74,34 @@ class Events {
 	 * Matrix Events
 	 */
 
-	eventRoomName(room: MatrixRoom) {
+	eventRoomName(matrixRoom: MatrixRoom) {
 		const rooms = useRooms();
-		console.debug('Room.name', room.name);
-		rooms.addMatrixRoom(room);
+		// console.debug('Room.name', room.name);
+		rooms.addRoom(new Room(matrixRoom));
 	}
 
-	eventRoomTimeline(event: MatrixEvent, room: MatrixRoom | undefined, toStartOfTimeline: boolean | undefined, removed: boolean) {
+	eventRoomTimeline(eventTimeLineHandler: EventTimeLineHandler, event: MatrixEvent, matrixRoom: MatrixRoom | undefined, toStartOfTimeline: boolean | undefined) {
+		if (!matrixRoom) return;
 		const rooms = useRooms();
-		// console.debug('Room.timeline', toStartOfTimeline, removed);
-		if(removed) {
-			console.debug('Room.timeline', toStartOfTimeline, removed);
-			return;
+		const phRoom = rooms.addRoom(new Room(matrixRoom));
+
+		if (event.event.type === 'm.room.message' && event.event.content?.msgtype === 'm.text') {
+			event.event = eventTimeLineHandler.transformEventContent(event.event as Partial<TEvent>);
 		}
 
-		if (!room) return;
+		if (!toStartOfTimeline) {
+			if (event.event.type !== 'm.room.message') return;
 
-		if (toStartOfTimeline) {
-			rooms.addMatrixRoom(room);
-		} else {
-			rooms.addMatrixRoom(room);
-
-			if (event.event.type != 'm.room.message') return;
-
-			if (room.roomId !== rooms.currentRoomId) {
-				rooms.unreadMessageCounter(room.roomId, event);
+			if (phRoom.roomId !== rooms.currentRoomId) {
+				phRoom.unreadMessageCounter(event);
 			}
+			rooms.onModRoomMessage(event);
 		}
 	}
 
 	eventRoomMemberName(event: MatrixEvent, member: RoomMember) {
 		const user = useUser();
-		console.debug('RoomMember.name', member.user);
+		// console.debug('RoomMember.name', member.user);
 		if (member.user !== undefined && member.user.userId == user.user.userId) {
 			user.setUser(member.user as User);
 			if (member.user.displayName !== undefined) {
@@ -118,19 +113,24 @@ class Events {
 	eventRoomMemberMembership(client: MatrixClient) {
 		return function eventRoomMemberMembershipInner(event: MatrixEvent, member: RoomMember) {
 			const me = client.getUserId();
-			console.debug('RoomMember.membership', member.membership, member.userId, me, event.getRoomId());
+			// console.debug('RoomMember.membership', member.membership, member.userId, me, event.getRoomId());
 			if (me == member.userId) {
 				const rooms = useRooms();
 				if (member.membership == 'leave') {
 					const roomId = event.getRoomId();
 					if (roomId != undefined) {
-						rooms.rooms[roomId].hidden = true;
+						rooms.rooms[roomId].setHidden(true);
 					}
 				} else if (member.membership == 'invite') {
 					const pubhubs = usePubHubs();
-					pubhubs.joinRoom(member.roomId).then(function () {
-						console.log('joined DM');
-					});
+					pubhubs
+						.joinRoom(member.roomId)
+						.catch((e) => console.debug(e.toString()))
+						//This sometimes gives an error when the room cannot be found, maybe it's an old experiment or
+						// deleted. Reflects the state, so we just show some debug info.
+						.then(function () {
+							console.log('joined DM');
+						});
 				}
 			}
 		};

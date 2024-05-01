@@ -1,6 +1,18 @@
 <template>
 	<div class="flex items-end">
-		<div name="input-container" class="w-4/5 bg-gray-lighter2 dark:bg-gray rounded-xl">
+		<div name="input-container" class="w-4/5 rounded-xl bg-hub-background-4 dark:bg-hub-background-4">
+			<!-- Floating -->
+			<div class="relative">
+				<Popover v-if="showPopover" @close="togglePopover" class="absolute bottom-1">
+					<UploadPicker @click="clickedAttachment"></UploadPicker>
+					<SignedMessageButton @click="showSigningMessageMenu()"></SignedMessageButton>
+				</Popover>
+				<Mention :msg="value" :top="caretPos.top" :left="caretPos.left" @click="mentionUser($event)"></Mention>
+				<div v-if="showEmojiPicker" class="absolute bottom-1 -right-28">
+					<EmojiPicker @emojiSelected="clickedEmoticon" @close="showEmojiPicker = false" />
+				</div>
+			</div>
+
 			<div name="reply-to" class="h-10 w-full flex items-center" v-if="messageActions.replyingTo">
 				<p class="ml-4 whitespace-nowrap mr-2">{{ $t('message.in_reply_to') }}</p>
 				<MessageSnippet class="w-[85%]" :event="messageActions.replyingTo"></MessageSnippet>
@@ -9,12 +21,12 @@
 				</button>
 			</div>
 
-			<div name="input-bar" class="flex items-start px-2 pb-1 min-h-[50px] rounded-2xl dark:bg-gray">
-				<Icon class="m-2 mt-3 dark:text-white" type="paperclip" @click="showUploadPicker" :asButton="true"></Icon>
+			<div name="input-bar" class="flex items-start min-h-[50px] px-2 py-1 gap-x-2 rounded-2xl dark:bg-hub-background-4">
+				<Icon class="dark:text-white self-end mb-2 pr-3 border-r-2 border-r-hub-background-5" type="paperclip" @click.stop="togglePopover" :asButton="true"></Icon>
 				<!-- Overflow-x-hidden prevents firefox from adding an extra row to the textarea for a possible scrollbar -->
 				<TextArea
 					ref="elTextInput"
-					class="mt-1 px-2 max-h-[300px] overflow-x-hidden border-none bg-transparent placeholder:text-gray-dark dark:placeholder:text-gray-lighter"
+					class="max-h-[300px] overflow-x-hidden border-none self-end bg-transparent placeholder:text-gray-dark dark:placeholder:text-gray-lighter"
 					v-focus
 					:placeholder="$t('rooms.new_message')"
 					:title="$t('rooms.new_message')"
@@ -27,7 +39,7 @@
 					@cancel="cancel()"
 					@caretPos="setCaretPos"
 				></TextArea>
-				<Icon class="m-2 mt-3 dark:text-white" type="emoticon" @click.stop="showEmojiPicker = !showEmojiPicker" :asButton="true"></Icon>
+				<Icon class="dark:text-white mb-2 self-end" type="emoticon" @click.stop="showEmojiPicker = !showEmojiPicker" :asButton="true"></Icon>
 			</div>
 
 			<div name="sign-message" v-if="signingMessage" class="bg-gray-light dark:bg-gray-dark flex items-center rounded-md p-2">
@@ -50,6 +62,9 @@
 		</div>
 
 		<!-- Sendbutton -->
+		<Button class="h-[50px] min-w-24 ml-2 flex rounded-xl" :disabled="!buttonEnabled" @click="submitMessage()">
+			<div class="m-auto flex gap-2 text-xl content-center"><Icon type="talk" size="sm" class="self-center -scale-100 rotate-45"></Icon>{{ $t(sendMessageText) }}</div>
+		</Button>
 		<Button class="h-[50px] min-w-24 ml-2 mr-2 flex items-center rounded-xl" :disabled="!buttonEnabled" @click="submitMessage()"><Icon type="talk" size="sm" class="mr-px mb-1"></Icon>{{ $t(sendMessageText) }}</Button>
 
     <Button v-if="showVideoCall" class="h-[50px] min-w-24 ml-2 mr-2 flex items-center rounded-xl" @click="startVideoCall()"><Icon type="videocall" size="sm" class="mr-px fill-current stroke-current"></Icon>{{ $t('rooms.video_call') }}</Button>
@@ -66,17 +81,16 @@
 		<!-- Yivi signing qr popup -->
 		<div v-if="signingMessage" class="absolute bottom-[400px] left-60" id="yivi-web-form"></div>
 
-		<!-- Emojipicker -->
-		<div v-if="showEmojiPicker" class="absolute bottom-16 md:right-36 xs:right-5" ref="elEmojiPicker">
-			<EmojiPicker @emojiSelected="clickedEmoticon" />
-		</div>
 		<div class="text-black dark:bg-gray-dark dark:text-white">
 			<FileUpload :file="fileInfo" :mxcPath="uri" v-if="fileUploadDialog" @close="fileUploadDialog = false"></FileUpload>
+			<!-- todo: move this into UploadPicker? -->
+			<input type="file" :accept="getTypesAsString(allTypes)" class="attach-file" ref="elFileInput" @change="uploadFile($event)" hidden />
 		</div>
 	</div>
 </template>
 
 <script setup lang="ts">
+	import { watch, ref, onMounted, computed } from 'vue';
 	import {watch, ref, onMounted, onUnmounted, nextTick, computed} from 'vue';
 	import { useFormInputEvents, usedEvents } from '@/composables/useFormInputEvents';
 	import { useMatrixFiles } from '@/composables/useMatrixFiles';
@@ -84,10 +98,6 @@
 	import { usePubHubs } from '@/core/pubhubsStore';
   import {useRoute, useRouter} from 'vue-router';
 	import { useMessageActions } from '@/store/message-actions';
-
-	import UploadPicker from '../ui/UploadPicker.vue';
-	import Popover, { CurrentlyOpeningEvent } from '../ui/Popover.vue';
-	import TextArea from './TextArea.vue';
 
 	import { YiviSigningSessionResult } from '@/lib/signedMessages';
 	import { fileUpload as uploadHandler } from '@/composables/fileUpload';
@@ -102,9 +112,8 @@
 	const { value, reset, changed, cancel } = useFormInputEvents(emit);
 	const { allTypes, getTypesAsString, uploadUrl } = useMatrixFiles();
 
-	const elPopover = ref<InstanceType<typeof Popover> | null>(null);
 	const buttonEnabled = ref(false);
-	const showingUploadPicker = ref(false);
+	const showPopover = ref(false);
 	const signingMessage = ref(false);
   const showVideoCall = ref(true);
 	const showEmojiPicker = ref(false);
@@ -116,7 +125,6 @@
 
 	const selectedAttributesSigningMessage = ref<string[]>(['irma-demo.sidn-pbdf.email.domain']);
 
-	const elEmojiPicker = ref<HTMLElement | null>(null);
 	const elFileInput = ref<HTMLInputElement | null>(null);
 	const elTextInput = ref<InstanceType<typeof TextArea> | null>(null);
 
@@ -224,39 +232,17 @@
 	}
 
 	onMounted(() => {
-		nextTick(() => {
-			document.addEventListener('click', handleClickOutside);
-		});
 		reset();
 	});
 
-	onUnmounted(() => {
-		document.removeEventListener('click', handleClickOutside);
-	});
-
-	function showUploadPicker(event: MouseEvent) {
-		// Close the 'replying to' UI
+	function togglePopover() {
 		messageActions.replyingTo = undefined;
-		// This custom property is used in the Popover component.
-		// It prevents the upload picker from closing immediately by the click that opened it.
-		(event as CurrentlyOpeningEvent).openingUploadPicker = true;
-
-		showingUploadPicker.value = true;
+		showPopover.value = !showPopover.value;
 	}
 
 	function showSigningMessageMenu() {
-		showingUploadPicker.value = false;
+		showPopover.value = false;
 		signingMessage.value = true;
-	}
-
-	function handleClickOutside(e: MouseEvent) {
-		if (elEmojiPicker.value !== null && !elEmojiPicker.value.contains(e.target as Node)) {
-			showEmojiPicker.value = false;
-		}
-	}
-
-	function getDocument() {
-		return document;
 	}
 
 	function setCaretPos(pos: { top: number; left: number }) {
@@ -265,7 +251,7 @@
 
 	function closeMenus() {
 		closeReplyingTo();
-		showingUploadPicker.value = false;
+		showPopover.value = false;
 		showEmojiPicker.value = false;
 		signingMessage.value = false;
 	}

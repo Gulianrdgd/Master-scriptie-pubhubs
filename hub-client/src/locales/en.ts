@@ -1,4 +1,12 @@
 const en = {
+	state: {
+		no_access: 'Your browser prevents the hub client from accessing its cookies and local storage, perhaps mistaking the hub client for a third-party tracker. Please click the button to request access.',
+		button_request: 'Request access',
+		initial: 'Checking whether hub client has access to cookies and local storage...',
+		requesting: 'Requesting access...',
+		denied: 'Sorry, the hub client cannot run without access to local storage',
+		woops: 'Woops, I did not expect to find myself in this state.',
+	},
 	dialog: {
 		ok: 'Ok',
 		cancel: 'Cancel',
@@ -6,6 +14,8 @@ const en = {
 		yes: 'Yes',
 		no: 'No',
 		submit: 'Submit',
+		ignore: 'Ignore',
+		continue: 'Continue',
 		title_sure: 'Are you sure?',
 	},
 	errors: {
@@ -24,6 +34,9 @@ const en = {
 		submit: 'Submit',
 	},
 	home: {
+		hub_homepage_welcome: 'Welcome to our Hub!',
+		hub_homepage_join: 'Join our Hub',
+		hub_homepage_welcome_auth: 'Welcome to our Hub!',
 		welcome: 'Welcome to <a href="https://pubhubs.net">PubHubs</a>.<br>PubHubs is a community platform based on public values.',
 		highlighted_hubs: 'Highlighted Hubs',
 	},
@@ -44,10 +57,15 @@ const en = {
 		rooms: '@:rooms.rooms',
 		settings: 'Settings',
 		tool: 'Tool',
+		admin_tools: 'Admin tools',
+		admin_tools_rooms: 'Manage rooms',
+		moderation_tools: 'Moderation tools',
+		moderation_tools_disclosure: 'Request disclosure',
 	},
 	others: {
 		nop: 'This feature is not implement yet.',
-		search: 'search',
+		search: 'Search',
+		read_receipt: 'Read by',
 	},
 	rooms: {
 		me: 'Me',
@@ -65,6 +83,8 @@ const en = {
 		join_room: 'Join a room',
 		add_room: 'Add a room',
 		name: 'Name of a room',
+		name_general_room: 'General',
+		name_feedback_room: 'Feedback',
 		filter: 'Filter rooms',
 		title: '{0}',
 		access_denied: 'Access Denied',
@@ -87,6 +107,7 @@ const en = {
 	},
 	settings: {
 		displayname: 'Nickname',
+		avatar: 'Avatar',
 		avatar_changed: 'Avatar updated!.',
 		displayname_changed: 'Nickname changed to `{0}`.',
 		theme: 'Theme',
@@ -100,11 +121,12 @@ const en = {
 		change_avatar: 'Change Avatar',
 	},
 	admin: {
-		title: 'Admin',
-		description: 'Create and delete (secured) rooms',
+		title: 'Admin tools',
+		description: 'Create, edit, and delete (secured) rooms',
 		add_room: 'Add a public room',
 		add_secured_room: 'Add a (secured) room',
 		name: 'Room name',
+		topic: 'Description',
 		room_type: 'Room type',
 		room_type_placeholder: 'example: ph.plugin.xxx',
 		edit_name: 'Change room name',
@@ -115,11 +137,24 @@ const en = {
 		secured_room: 'Secured room',
 		no_secured_rooms: 'No secured rooms',
 		secured_remove_sure: 'Are you sure to delete this secured room?',
-		secured_description: 'Description',
+		secured_description: 'Help',
 		secured_yivi_attributes: 'Yivi Attributes',
 		secured_attribute: 'Attribute',
 		secured_values: 'Values',
 		secured_profile: 'Profile',
+		ask_disclosure_title: 'Ask a user to disclose information',
+		ask_disclosure_choose_user: 'Ask a user to disclose information',
+		ask_disclosure_user_title: 'User',
+		ask_disclosure_where_title: 'Disclose to',
+		ask_disclosure_where_room_title: 'Disclose to room',
+		ask_disclosure_where_room_placeholder: '!room:...',
+		ask_disclosure_where_public: 'a public room',
+		ask_disclosure_where_private: 'the moderator',
+		ask_disclosure_message_title: 'Message',
+		ask_disclosure_message_placeholder: 'Please disclose the following information',
+		ask_disclosure_message_to_recipient: 'To {0}:\n\n{1}\n\nThe following information is requested: {2}',
+		disclosure_sign_message: 'To the moderator:\n\nThe requested information is disclosed.',
+		disclosure_dialog_title: 'Please disclose information',
 		room_call_permission: 'Everyone could start a call',
 	},
 	themes: {
@@ -151,7 +186,8 @@ const en = {
 		},
 	},
 	time: {
-		yesterday: 'yesterday',
+		today: 'Today',
+		yesterday: 'Yesterday',
 		daysago: '{0} days ago',
 	},
 	emoji: {
@@ -164,6 +200,11 @@ const en = {
 		lightbulb: 'Lifestyle',
 		signs: 'Symbols',
 		flag: 'Flags',
+	},
+	validation: {
+		required: '`{0}` is required.',
+		max_length: '`{0}` is too long, max length is {1} characters.',
+		min_length: '`{0}` is too short, min length is {1} characters.',
 	},
 };
 

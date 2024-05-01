@@ -10,6 +10,25 @@ type DisclosedAttribute = {
 	};
 };
 
+export type DisclosureAttribute = {
+	yivi: string;
+	values: string;
+};
+
+export type AskDisclosure = {
+	user: { userId: string; displayName?: string }; // subset of MatrixUser
+	message: string;
+	attributes: DisclosureAttribute[];
+	where_room: string;
+};
+
+export type AskDisclosureMessage = {
+	userId: string;
+	replyToRoomId: string;
+	message: string;
+	attributes: DisclosureAttribute[];
+};
+
 type YiviSignedMessage = {
 	message: string;
 };
@@ -31,7 +50,10 @@ export function getMessage(message: SignedMessage): string {
 }
 
 export function getDisclosedAttributes(message: SignedMessage): DisclosedAttribute[] {
-	return message.disclosed[0] || [];
+	if (message.disclosed) {
+		return message.disclosed[0] || [];
+	}
+	return [];
 }
 
 export const EXAMPLE_SESSION_RESULT = {

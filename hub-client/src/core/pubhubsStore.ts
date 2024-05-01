@@ -3,29 +3,27 @@ import { defineStore } from 'pinia';
 import {
 	User as MatrixUser,
 	MatrixClient,
-	ContentHelpers,
+	MatrixEvent,ContentHelpers,
 	MatrixError,
 	IStateEventWithRoomId
 } from 'matrix-js-sdk';
 
-
+import Room from '@/model/rooms/Room';
 import { Authentication } from '@/core/authentication';
 import { Events } from '@/core/events';
-import { useSettings, User, useUser, useRooms, useConnection, PubHubsRoomType } from '@/store/store';
+import { useSettings, User, useUser, useRooms, useConnection, RoomType, TPublicRoom } from '@/store/store';
 
-import filters from '@/core/filters';
 import { hasHtml, sanitizeHtml } from '@/core/sanitizer';
 import { api_synapse, api_matrix } from '@/core/api';
-import { M_Mentions, M_MessageEvent, M_TextMessageEventContent } from '@/types/events';
-import { YiviSigningSessionResult } from '@/lib/signedMessages';
+import { YiviSigningSessionResult, AskDisclosureMessage } from '@/lib/signedMessages';
+import { TMentions, TTextMessageEventContent, TMessageEvent } from '@/model/events/TMessageEvent';
+import { ReceiptType } from 'matrix-js-sdk/lib/@types/read_receipts';
 
 const usePubHubs = defineStore('pubhubs', {
-	state: () => {
-		return {
-			Auth: new Authentication(),
-			client: {} as MatrixClient,
-		};
-	},
+	state: () => ({
+		Auth: new Authentication(),
+		client: {} as MatrixClient,
+	}),
 
 	getters: {
 		getBaseUrl(state) {
@@ -42,27 +40,32 @@ const usePubHubs = defineStore('pubhubs', {
 
 		async login() {
 			console.log('PubHubs.login');
-			try {
-				this.client = (await this.Auth.login()) as MatrixClient;
-				const events = new Events(this.client as MatrixClient);
-				await events.initEvents();
-				const connection = useConnection();
-				connection.on();
-				this.updateRooms();
-				const user = useUser();
-				const newUser = this.client.getUser(user.user.userId);
-				if (newUser != null) {
-					user.setUser(newUser as User);
-					await user.fetchDisplayName(this.client as MatrixClient);
-					await user.fetchIsAdministrator(this.client as MatrixClient);
-					api_synapse.setAccessToken(this.Auth.getAccessToken());
-					api_matrix.setAccessToken(this.Auth.getAccessToken());
-				}
-			} catch (error) {
-				if (typeof error == 'string' && error.indexOf('M_FORBIDDEN') < 0) {
-					console.debug('ERROR:', error);
-				}
-			}
+			this.Auth.login()
+				.then((x) => {
+					this.client = x as MatrixClient;
+					const events = new Events(this.client as MatrixClient);
+					events.initEvents();
+				})
+				.then(() => {
+					const connection = useConnection();
+					connection.on();
+					const user = useUser();
+					const newUser = this.client.getUser(user.user.userId);
+					if (newUser != null) {
+						user.setUser(newUser as User);
+						user.fetchDisplayName(this.client as MatrixClient)
+							.then(() => user.fetchIsAdministrator(this.client as MatrixClient))
+							.then(() => {
+								api_synapse.setAccessToken(this.Auth.getAccessToken());
+								api_matrix.setAccessToken(this.Auth.getAccessToken());
+							});
+					}
+				})
+				.catch((error) => {
+					if (typeof error == 'string' && error.indexOf('M_FORBIDDEN') < 0) {
+						console.debug('ERROR:', error);
+					}
+				});
 		},
 
 		logout() {
@@ -89,9 +92,16 @@ const usePubHubs = defineStore('pubhubs', {
 			alert(message);
 		},
 
-		showError(error: string) {
-			const message = 'Unfortanatly an error occured. Please contact the developers.\n\n' + error;
-			this.showDialog(message);
+		showError(error: string | MatrixError) {
+			if (typeof error !== 'string') {
+				if (error.errcode !== 'M_FORBIDDEN') {
+					this.showDialog(error.data.error as string);
+				} else {
+					console.log(error);
+				}
+			} else {
+				this.showDialog('Unfortanatly an error occured. Please contact the developers.\n\n' + error.toString);
+			}
 		},
 
 		/**
@@ -107,15 +117,30 @@ const usePubHubs = defineStore('pubhubs', {
 			});
 		},
 
-		async getAllPublicRooms() {
-			return await this.client.publicRooms({
-				limit: 1000,
-				filter: {
-					generic_search_term: '',
-				},
-			});
+		async getAllPublicRooms(): Promise<TPublicRoom[]> {
+			let publicRoomsResponse = await this.client.publicRooms();
+			let public_rooms = publicRoomsResponse.chunk;
+
+			// DANGER this while loop turns infinite when the generated public rooms request is a POST request.
+			// this happens when the optional 'options' parameter is supplied to 'this.client.publicRooms'. Then the
+			// pagination doesn't work anymore and the loop becomes infinite.
+			while (publicRoomsResponse.next_batch) {
+				publicRoomsResponse = await this.client.publicRooms({
+					since: publicRoomsResponse.next_batch,
+				});
+				public_rooms = public_rooms.concat(publicRoomsResponse.chunk);
+			}
+
+			return public_rooms;
 		},
 
+		/**
+		 * Uses the client to join a room (a no op when already a member) and updates the rooms in the store. Can throw
+		 * an error.
+		 * @param room_id - a room id
+		 * @throws error - an error when something goes wrong joining the room. For example a forbidden respons or a rate limited
+		 * response
+		 */
 		async joinRoom(room_id: string) {
 			await this.client.joinRoom(room_id);
 			this.updateRooms();
@@ -155,7 +180,7 @@ const usePubHubs = defineStore('pubhubs', {
 					visibility: 'private',
 					invite: [other.userId],
 					is_direct: true,
-					creation_content: { type: PubHubsRoomType.PH_MESSAGES_DM },
+					creation_content: { type: RoomType.PH_MESSAGES_DM },
 					topic: `PRIVATE: ${me.userId}, ${other.userId}`,
 					history_visibility: 'shared',
 					guest_can_join: false,
@@ -171,24 +196,29 @@ const usePubHubs = defineStore('pubhubs', {
 			this.updateRooms();
 		},
 
+		async setTopic(roomId: string, topic: string) {
+			await this.client.setRoomTopic(roomId, topic);
+			this.updateRooms();
+		},
+
 		async leaveRoom(roomId: string) {
 			await this.client.leave(roomId);
 			const rooms = useRooms();
-			rooms.room(roomId)?.hide();
+			rooms.room(roomId)?.setHidden(true);
 			// this.updateRooms();
 		},
 
 		/**
 		 * Adds users which are mentioned by '@' in the message to m.mentions field, mutating the content argument.
 		 */
-		async _addUserMentionsToMessageContent(content: M_TextMessageEventContent) {
+		async _addUserMentionsToMessageContent(content: TTextMessageEventContent) {
 			if (content.body.includes('@')) {
 				const users = await this.getUsers();
 				let mentionedUsersName = [];
 				const mentionedUsers = content.body.split('@');
 				mentionedUsersName = users
 					.filter((user) => {
-						return mentionedUsers.some((menUser) => user.rawDisplayName != undefined && (menUser.includes(user.rawDisplayName) || menUser === user.rawDisplayName));
+						return mentionedUsers.some((menUser: any) => user.rawDisplayName != undefined && (menUser.includes(user.rawDisplayName) || menUser === user.rawDisplayName));
 					})
 					.map((users) => users.rawDisplayName)
 					.filter((displayName): displayName is string => displayName !== undefined);
@@ -197,7 +227,7 @@ const usePubHubs = defineStore('pubhubs', {
 			}
 		},
 
-		_createEmptyMentions(): M_Mentions {
+		_createEmptyMentions(): TMentions {
 			return {
 				room: false,
 				user_ids: [],
@@ -207,10 +237,14 @@ const usePubHubs = defineStore('pubhubs', {
 		/**
 		 * Mutates the message content appropriately to become a reply to the inReplyTo event.
 		 */
-		_addInReplyToToMessageContent(content: M_TextMessageEventContent, inReplyTo: M_MessageEvent) {
+		_addInReplyToToMessageContent(content: TTextMessageEventContent, inReplyTo: TMessageEvent) {
+			// todo: fix in new version of replies (issue #313)
+			//@ts-ignore
 			content['m.relates_to'] = { 'm.in_reply_to': { event_id: inReplyTo.event_id, x_event_copy: structuredClone(inReplyTo) } };
 
 			// Don't save inReplyTo of inReplyTo event.
+			// todo: fix in new version of replies (issue #313)
+			//@ts-ignore
 			delete content['m.relates_to']?.['m.in_reply_to']?.x_event_copy?.content?.['m.relates_to']?.['m.in_reply_to']?.x_event_copy;
 
 			// Mention appropriate users
@@ -225,16 +259,16 @@ const usePubHubs = defineStore('pubhubs', {
 			}
 		},
 
-		async _constructMessageContent(text: string, inReplyTo?: M_MessageEvent): Promise<M_TextMessageEventContent> {
-			let content = ContentHelpers.makeTextMessage(text) as M_TextMessageEventContent;
+		async _constructMessageContent(text: string, inReplyTo?: TMessageEvent): Promise<TTextMessageEventContent> {
+			let content = ContentHelpers.makeTextMessage(text) as TTextMessageEventContent;
 
 			const cleanText = hasHtml(text);
 			if (typeof cleanText == 'string') {
 				const html = sanitizeHtml(text);
-				content = ContentHelpers.makeHtmlMessage(cleanText, html) as M_TextMessageEventContent;
+				content = ContentHelpers.makeHtmlMessage(cleanText, html) as TTextMessageEventContent;
 			}
 
-			// content should have M_TextMessageEventContent type after this step (and not before), but don't know how to change type.
+			// content should have TTextMessageEventContent type after this step (and not before), but don't know how to change type.
 			content['m.mentions'] = this._createEmptyMentions();
 
 			await this._addUserMentionsToMessageContent(content);
@@ -252,7 +286,7 @@ const usePubHubs = defineStore('pubhubs', {
 		 * @param text
 		 * @param inReplyTo Possible event to which the new message replies.
 		 */
-		async addMessage(roomId: string, text: string, inReplyTo?: M_MessageEvent) {
+		async addMessage(roomId: string, text: string, inReplyTo?: TMessageEvent) {
 			const rooms = useRooms();
 			const room = rooms.room(roomId);
 			if (room) {
@@ -320,6 +354,29 @@ const usePubHubs = defineStore('pubhubs', {
 			}
 		},
 
+		async sendReadReceipt(event: MatrixEvent) {
+			if (!event) return;
+			const loggedInUser = useUser();
+			const content = {
+				'm.read': {
+					[loggedInUser.user.userId]: {
+						ts: event.localTimestamp,
+						thread_id: 'main',
+					},
+				},
+			};
+			await this.client.sendReceipt(event, ReceiptType.Read, content);
+		},
+
+		async addAskDisclosureMessage(roomId: string, body: string, askDisclosureMessage: AskDisclosureMessage) {
+			const content = {
+				msgtype: 'pubhubs.ask_disclosure_message',
+				body: body,
+				ask_disclosure_message: askDisclosureMessage,
+			};
+			await this.client.sendEvent(roomId, 'm.room.message', content);
+		},
+
 		// Sends acknowledgement to synapse about the message has been read.
 		// We also store the timestamp in localstorage to avoid any inaccuracy of timestamp comparision.
 		// SEE our algorithm for receipt acknowledgement in room.ts / unreadMessageCounter
@@ -329,7 +386,7 @@ const usePubHubs = defineStore('pubhubs', {
 			const roomId = rooms.currentRoom?.roomId!;
 
 			// If we already have unread messages in the room and we haven't seen them, then no need to send a receipt.
-			if (rooms.currentRoom?._ph.unreadMessages != 0) {
+			if (rooms.currentRoom?.numUnreadMessages != 0) {
 				return;
 			}
 
@@ -418,9 +475,9 @@ const usePubHubs = defineStore('pubhubs', {
 
 		async changeDisplayName(name: string) {
 			try {
-				this.client.setDisplayName(name);
-			} catch (error) {
-				this.showError(error as string);
+				await this.client.setDisplayName(name);
+			} catch (error: any) {
+				this.showError(error);
 			}
 		},
 
@@ -429,12 +486,8 @@ const usePubHubs = defineStore('pubhubs', {
 				await this.client.setAvatarUrl(uri);
 				//Quickly update the avatar url.
 				await this.client.sendStateEvent('', 'm.room.avatar', { uri }, '');
-			} catch (error) {
-				const e = error as MatrixError;
-				// No user ist there on settings. so we ignore the error.
-				if (e.errcode !== 'M_FORBIDDEN') {
-					this.showError(error as string);
-				}
+			} catch (error: any) {
+				this.showError(error);
 			}
 		},
 
@@ -450,14 +503,15 @@ const usePubHubs = defineStore('pubhubs', {
 		},
 
 		async getUsers(): Promise<Array<MatrixUser>> {
-			let users = (await this.client.getUsers()) as Array<MatrixUser>;
+			const users = (await this.client.getUsers()) as Array<MatrixUser>;
+			// Removed this hack @ 04 april 2024, if all seems well at next merge to stable, this can be removed permanent
 			// Doesn't get all displaynames correct from database, this is a hack to change displayName to only the pseudonym
-			users = users.map((user) => {
-				if (user.userId == user.displayName) {
-					user.displayName = filters.extractPseudonym(user.userId);
-				}
-				return user;
-			});
+			// users = users.map((user) => {
+			// 	if (user.userId === user.displayName) {
+			// 		user.displayName = filters.extractPseudonym(user.userId);
+			// 	}
+			// 	return user;
+			// });
 			return users;
 		},
 
@@ -471,11 +525,10 @@ const usePubHubs = defineStore('pubhubs', {
 		 *
 		 * @returns {boolean} true if all events are loaded, false otherwise.
 		 */
-		async loadOlderEvents(roomId: string): Promise<boolean> {
+		async loadOlderEvents(room: Room): Promise<boolean> {
 			const settings = useSettings();
 
-			const room = this.client.getRoom(roomId);
-			const firstEvent = room?.getLiveTimeline().getEvents()[0];
+			const firstEvent = room.timelineGetEvents()[0];
 
 			// If all messages are loaded, return.
 			if (!firstEvent || firstEvent.getType() === 'm.room.create') return true;
@@ -488,21 +541,24 @@ const usePubHubs = defineStore('pubhubs', {
 			const timeline = await this.client.getEventTimeline(timelineSet, eventId);
 			if (!timeline) throw new Error('Failed to load older events: Timeline not found');
 
+			if (!this.client.getRoom(room.roomId)) {
+				//Sometimes the room is NOT fully initialized on client-side this call forces the client to update its rooms, including this one.
+				//Our Room already exists (with its unready backing MatrixRoom), and we can mostly use it, but not to paginate the timeline.
+				await this.updateRooms();
+			}
+
 			await this.client.paginateEventTimeline(timeline, { backwards: true, limit: settings.pagination });
 			return false;
 		},
 
-		async loadToMessage(roomId: string, eventId: string) {
-			const room = this.client.getRoom(roomId);
-			if (!room) throw new Error('Failed to load to message: Room not found');
-
+		async loadToMessage(room: Room, eventId: string) {
 			let eventTimeline = room.getTimelineForEvent(eventId);
 			let i = 0;
 			let allEventsLoaded = false;
 			const searchLimit = 1000;
 
 			while (!eventTimeline && !allEventsLoaded && i < searchLimit) {
-				allEventsLoaded = await this.loadOlderEvents(roomId);
+				allEventsLoaded = await this.loadOlderEvents(room);
 				eventTimeline = room.getTimelineForEvent(eventId);
 				i++;
 			}

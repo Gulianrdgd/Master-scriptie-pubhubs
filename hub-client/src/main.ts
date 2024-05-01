@@ -8,14 +8,15 @@ import { registerComponents } from '@/registerComponents.js';
 import { registerPlugins, registerPluginComponents } from '@/registerPlugins.js';
 
 import { router } from '@/core/router';
-import { focus, twClass } from '@/core/directives';
-import App from '@/pages/App.vue';
+import { focus, twClass, clickOutside } from '@/core/directives';
+import AppWrapper from '@/pages/AppWrapper.vue';
 
 import { ReplaceConsole } from '@/console';
 ReplaceConsole();
 
 const pinia = createPinia();
-const app = createApp(App);
+const app = createApp(AppWrapper);
+
 registerComponents(app);
 registerPlugins(app);
 registerPluginComponents(app);
@@ -27,4 +28,5 @@ app.use(router);
 app.use(pinia);
 app.directive('focus', focus);
 app.directive('tw-class', twClass);
+app.directive('click-outside', clickOutside);
 app.mount('#app');

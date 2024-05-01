@@ -5,6 +5,6 @@ Jinja2<3.1.2
 typing-extensions>=3.7.4
 Twisted>=18.9.0
 # /use the same version as the docker image is built from
-matrix-synapse==1.87
 livekit-api>=0.4.1
 livekit>=0.8.0
+matrix-synapse==1.105.1
