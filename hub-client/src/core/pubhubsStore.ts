@@ -324,7 +324,6 @@ const usePubHubs = defineStore('pubhubs', {
 		// High level functions, whe call the function now per room.
 		// TODO: Think about this because then we can have multiple calls per room which is fine, I guess?
 		async setupVideoCallRoom(roomId: string) {
-			console.log(`Creating group call Room ${roomId}`);
 			const rooms = useRooms();
 			const calledRoom = rooms.rooms[roomId];
 

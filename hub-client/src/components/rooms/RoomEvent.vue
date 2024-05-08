@@ -112,6 +112,4 @@
 		timerReady.value = true;
 	}, 1000);
 
-  console.log(props.event)
-
 </script>

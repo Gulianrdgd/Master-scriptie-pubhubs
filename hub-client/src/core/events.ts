@@ -142,8 +142,7 @@ class Events {
 
 		// const rooms = useRooms();
 
-		const roomId = call.room.roomId;
-		console.log('roomId', roomId);
+		// const roomId = call.room.roomId;
 		// rooms.rooms[roomId].videoCallStarted = call.state !== 'ended';
 		// rooms.rooms[roomId].setUpAndJoinMatrixVideoCall();
 		// TODO: Add video call receive code

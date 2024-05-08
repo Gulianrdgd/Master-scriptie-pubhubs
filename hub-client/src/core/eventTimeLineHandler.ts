@@ -113,7 +113,6 @@ class EventTimeLineHandler {
 	private checkVideoCallEventContent(event: Partial<TEvent>) {
 		// @ts-expect-error: This is a hack to get the event content
 		if(!(event.event_id && event.content && event.content['m.type'] === 'm.video')) {
-			console.log('Not a video call event', event);
 			return event;
 		}
 

@@ -6,26 +6,21 @@
   const router = useRouter();
 
   function leaveCall(){
-  console.log("end call")
-
     videoCall.leaveCall();
     router.back();
   }
 
 function endCall(){
-  console.log("end call")
   videoCall.endCall();
   router.back();
 
 }
 
 function unpublishAllTracks(){
-  console.log("unpublishAllTracks")
   videoCall.togglePublishTracks(false);
 }
 
 function publishAllTracks(){
-  console.log("publishAllTracks")
   videoCall.togglePublishTracks(true);
 }
 

@@ -197,7 +197,6 @@
 	}
 
   function startVideoCall() {
-    console.log('start video call', rooms.currentRoomId);
     pubhubs.setupVideoCallRoom(rooms.currentRoomId);
     router.push({ name: 'videocall'});
 

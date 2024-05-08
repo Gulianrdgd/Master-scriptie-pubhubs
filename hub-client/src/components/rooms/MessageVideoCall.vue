@@ -24,14 +24,14 @@
 
 <script setup lang="ts">
 
-import {M_VideoMessageEventContent} from "@/types/events";
 import {useRooms} from "@/store/rooms";
 import Icon from "@/components/elements/Icon.vue";
 import {computed} from "vue";
 import {useRouter} from "vue-router";
+import {TVideoMessageEventContent} from "@/model/events/TMessageEvent";
 const router = useRouter();
 
-const props = defineProps<{ room_id: string, call: M_VideoMessageEventContent }>();
+const props = defineProps<{ room_id: string, call: TVideoMessageEventContent }>();
 
 const isOnGoing = !props.call["m.terminated"] && !props.call.hide;
 
@@ -44,7 +44,6 @@ const elepased_time = computed(() => {
 });
 
 function joinCall() {
-  console.log("Joining call widget");
   const rooms = useRooms();
 
   router.push({name: "videocall"});

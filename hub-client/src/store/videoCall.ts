@@ -11,7 +11,7 @@ import {
     AudioPresets,
     VideoPreset,
     ScreenSharePresets,
-    DefaultReconnectPolicy,
+    DefaultReconnectPolicy, BaseKeyProvider,
 } from "livekit-client";
 import {MatrixKeyProvider} from "@/core/matrixKeyProvider";
 import {MatrixRTCSession} from "matrix-js-sdk/lib/matrixrtc/MatrixRTCSession";
@@ -133,23 +133,20 @@ actions: {
 
             matrix_key_provider.setRTCSession(matrixRTC);
 
-            // const e2ee = {
-            //     keyProvider: matrix_key_provider as BaseKeyProvider,
-            //     worker: new Worker(new URL('livekit-client/e2ee-worker', import.meta.url))
-            // };
-            //
-            // console.log(e2ee);
-            // this.options.e2ee = e2ee;
+            const e2ee = {
+                keyProvider: matrix_key_provider as BaseKeyProvider,
+                worker: new Worker(new URL('livekit-client/e2ee-worker', import.meta.url))
+            };
 
-            console.log(this.options)
+            this.options.e2ee = e2ee;
 
             // @ts-expect-error: I actually don't know why this is, they should be the same TODO!
             this.livekit_room = new LiveKitRoom(toRaw(this.options));
 
-            await this.livekit_room.connect(target_url, token);
-
-            console.log("DONE CONNECTING");
-        },
+            await this.livekit_room.connect(target_url, token, {
+               autoSubscribe: true
+            });
+            },
 
         async leaveCall() {
             this.token = null;
@@ -194,14 +191,12 @@ actions: {
             }else{
 
                 if(this.audio_track){
-                    console.log('unpublishing audio track')
                     // @ts-expect-error: I actually don't know why this is TODO!
                     await this.livekit_room.localParticipant.unpublishTrack(this.audio_track);
                     // this.audio_track.stop();
                 }
 
                 if(this.video_track){
-                    console.log('unpublishing video track')
                     // @ts-expect-error: I actually don't know why this is TODO!
                     await this.livekit_room.localParticipant.unpublishTrack(this.video_track);
                     // this.video_track.stop();
@@ -210,12 +205,11 @@ actions: {
         },
 
         async changeVideoDevice(deviceId: string | null) {
-            console.log('changeVideoDevice', deviceId)
 
             // detach the video track if it exists
-            // if(this.video_track) {
-            //     this.video_track.stop();
-            // }
+            if(this.video_track) {
+                this.video_track.stop();
+            }
 
             this.selected_video_device_id = deviceId;
 
@@ -228,10 +222,7 @@ actions: {
 
                 });
 
-                console.log(this.call_active, this.should_publish_tracks, this.livekit_room, this.video_track)
-
                 if(this.call_active && this.should_publish_tracks && this.livekit_room && this.video_track){
-                    console.log("PUBLISHING VIDEO TRACK");
                     // @ts-expect-error: I actually don't know why this is TODO!
                     await this.livekit_room.localParticipant.publishTrack(this.video_track);
                 }
@@ -242,12 +233,10 @@ actions: {
         },
 
         async changeAudioDevice(deviceId: string| null) {
-            console.log('changeAudioDevice', deviceId)
-
             // detach the audio track if it exists
-            // if(this.audio_track) {
-            //     this.audio_track.stop();
-            // }
+            if(this.audio_track) {
+                this.audio_track.stop();
+            }
 
             this.selected_audio_device_id = deviceId;
 
@@ -259,7 +248,6 @@ actions: {
                 });
 
                 if(this.call_active && this.should_publish_tracks && this.livekit_room && this.audio_track){
-                    console.log("PUBLISHING VIDEO TRACK");
                     // @ts-expect-error: I actually don't know why this is TODO!
                     await this.livekit_room.localParticipant.publishTrack(this.audio_track);
                 }

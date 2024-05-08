@@ -16,7 +16,6 @@ let audioOptions = ref<Options>([]);
 let videoOptions = ref<Options>([]);
 const videoCall = useVideoCall();
 const router = useRouter();
-// let timer: NodeJS.Timeout | null = null;
 
 let connectInputs = ref(false);
 
@@ -57,49 +56,15 @@ onMounted(async () => {
 
   videoCall.livekit_room.removeAllListeners();
 
-  videoCall.livekit_room.on('participantConnected', (participant) => {
-    console.log("Participant connected", participant)
-    syncRemoteParticipants();
-  });
-
-  videoCall.livekit_room.on('participantDisconnected', (participant) => {
-    console.log("Participant disconnected", participant)
-    syncRemoteParticipants();
-  });
-
-
-  videoCall.livekit_room.on('localTrackPublished', (track, participant) => {
-    console.log("Local Published", track, participant);
-    syncRemoteParticipants();
-  });
-
-  videoCall.livekit_room.on('trackPublished', (track, participant) => {
-    console.log("Published", track, participant);
-    syncRemoteParticipants();
-  });
-
-  videoCall.livekit_room?.on('localTrackUnpublished', (track, participant) => {
-    console.log("Local Unpublished", track, participant);
-    syncRemoteParticipants();
-  });
-
-
-  videoCall.livekit_room?.on('trackUnpublished', (track, participant) => {
-    console.log("Unpublished", track, participant);
-    syncRemoteParticipants();
-  });
-
-  // timer = setInterval(() => {
-  //   syncRemoteParticipants();
-  // }, 10000)
+  videoCall.livekit_room.on('participantConnected', syncRemoteParticipants);
+  videoCall.livekit_room.on('participantDisconnected', syncRemoteParticipants);
+  videoCall.livekit_room.on('localTrackPublished', syncRemoteParticipants);
+  videoCall.livekit_room.on('trackPublished', syncRemoteParticipants);
+  videoCall.livekit_room.on('localTrackUnpublished', syncRemoteParticipants);
+  videoCall.livekit_room.on('trackUnpublished', syncRemoteParticipants);
 
 });
-//
-// onBeforeUnmount(() => {
-//   if(timer) {
-//     clearInterval(timer);
-//   }
-// });
+
 
 function goBack(){
   router.back();
@@ -126,14 +91,12 @@ let remotes = ref<[string, RemoteParticipant][]>([]);
           <div class="mx-2 w-1/2">
             <h2>Microphone source</h2>
             <Dropdown value="" :options="audioOptions" :on-select="(audioDevice: string) => {
-              console.log(audioDevice);
               videoCall.changeAudioDevice(audioDevice);
             }" />
           </div>
           <div class="mx-2 w-1/2">
             <h2>Video source</h2>
             <Dropdown value="" :options="videoOptions" :on-select="(videoDevice: string) => {
-              console.log(videoDevice);
               videoCall.changeVideoDevice(videoDevice);
             }" />
           </div>

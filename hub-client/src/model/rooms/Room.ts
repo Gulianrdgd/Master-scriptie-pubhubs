@@ -403,11 +403,9 @@ export default class Room {
 	// It should also send the keys to the messagebox
 	// Lastly we also need to join the rooms RTC session
 	public async setUpAndJoinMatrixVideoCall() {
-		console.log("Starting video call in room", this.roomId)
 		const videoCall = useVideoCall();
 
 		let groupCall = this.matrixRoom.client.getGroupCallForRoom(this.roomId);
-		console.log("GroupCall", groupCall)
 		// FOR DEBUGGING TODO: REMOVE
 		// if(groupCall){
 		// 	// TERMINATE AND RETURN
@@ -419,7 +417,6 @@ export default class Room {
 		// Get matrixRTCSession
 		this.matrixRoom.client.matrixRTC.start();
 		const matrixRTCSessions = this.matrixRoom.client.matrixRTC.getRoomSession(this.matrixRoom)
-		console.log(matrixRTCSessions);
 
 		// Create groupcall if it is not there
 		if (!groupCall) {
@@ -432,14 +429,12 @@ export default class Room {
 			);
 
 			// create livekit room
-			const livekitRespons = await api_synapse.apiPOST(api_synapse.apiURLS.videoCall + '?room_id=' + this.roomId, {});
+			await api_synapse.apiPOST(api_synapse.apiURLS.videoCall + '?room_id=' + this.roomId, {});
 
-			console.log("Livekit room response!", livekitRespons);
 		}
 
 		// Get Livekit token and URL.
 		const livekitTokenRepons = await api_synapse.apiGET(api_synapse.apiURLS.videoCall + '?room_id=' + this.roomId);
-		console.log("Livekit token response!", livekitTokenRepons);
 
 		// Assign new RTCSession
 		this.roomRTCSession = matrixRTCSessions;
@@ -454,7 +449,6 @@ export default class Room {
 
 	// This function should remove all the callbacks and remove the RTC session
 	public async leaveMatrixVideoCall() {
-		console.log("Stopping video call in room", this.roomId)
 		// await this._vc.roomRTCSession.leaveRoomSession(10);
 		const matrixRTCSessions = this.matrixRoom.client.matrixRTC.getRoomSession(this.matrixRoom)
 		matrixRTCSessions.leaveRoomSession(10);

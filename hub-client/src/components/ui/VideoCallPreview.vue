@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import {computed, ref, watch} from "vue";
+import {computed, onBeforeUnmount, ref, watch} from "vue";
 import useVideoCall from "@/store/videoCall";
 import AudioPreview from "@/components/ui/AudioPreview.vue";
 
@@ -23,7 +23,6 @@ const audioContext = new AudioContext();
 const analyser = audioContext.createAnalyser();
 
 watch(videoSource, (videoTrack) => {
-  console.log("videoTrack", videoTrack, videoEl)
     if (videoEl.value && videoTrack) {
       videoTrack.attach(videoEl.value);
     }
@@ -33,7 +32,6 @@ watch(videoSource, (videoTrack) => {
 });
 
 watch(audioSource, async (audioTrack) => {
-  console.log("audioTrack", audioTrack)
 
   if (audioTrack) {
     // audioTrack.
@@ -76,6 +74,12 @@ watch(audioSource, async (audioTrack) => {
 
       audioSource.connect(node).connect(audioContext.destination);
     }
+  }
+});
+
+onBeforeUnmount(() => {
+  if (audioContext.state === 'running') {
+    audioContext.close();
   }
 });
 

@@ -176,7 +176,6 @@
 		// Normal room
 		if (!props.secured) {
 			if (isNewRoom.value) {
-      console.log("NEW ROOM")
 			let newRoomOptions = {
 				name: room.name,
 					topic: room.topic,
