@@ -235,6 +235,15 @@ export default class Room {
 		return this.matrixRoom.getLiveTimeline().getEvents().filter(isMessageEvent).length;
 	}
 
+	public timelineRemoveOldVideoCalls() {
+		this.matrixRoom.getLiveTimeline().getEvents().filter((event) => {
+			return event.getPrevContent() !== undefined && event.event.type === 'org.matrix.msc3401.call';
+		}).map((event) => {
+			this.removeEvent(event.getUnsigned().replaces_state as string)
+			// return event.getUnsigned().replaces_state
+		});
+	}
+
 	/**
 	 * Checks whether the timeline contains any events sent by the user.
 	 * @param userId
@@ -256,7 +265,8 @@ export default class Room {
 	//#endregion
 
 	public getVisibleTimeline() {
-		const timeline = this.matrixRoom.getLiveTimeline().getEvents().filter(isVisibleEvent);
+		this.timelineRemoveOldVideoCalls();
+		const timeline = this.matrixRoom.getLiveTimeline().getEvents().filter(isVisibleEvent)
 		return timeline;
 	}
 

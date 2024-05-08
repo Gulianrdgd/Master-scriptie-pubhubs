@@ -27,6 +27,8 @@ function publishAllTracks(){
 function printRemote(){
   console.log("remoteParticipants", videoCall.livekit_room?.remoteParticipants)
 }
+
+
 </script>
 
 <template>
@@ -36,12 +38,15 @@ function printRemote(){
       <button class="bg-avatar-orange text-white px-4 py-2 rounded-full" @click="leaveCall">Leave call</button>
       <button class="bg-blue text-white px-4 py-2 rounded-full">Mute</button>
       <button class="bg-blue text-white px-4 py-2 rounded-full" @click="printRemote">Video</button>
-      <button class="bg-blue text-white px-4 py-2 rounded-full" @click="() => {videoCall.livekit_room?.simulateParticipants({})}">Simulate remotes</button>
+      <button class="bg-blue text-white px-4 py-2 rounded-full" @click="() => {videoCall.livekit_room?.simulateParticipants({participants:
+      {count: 1, audio: true, video: true}
+      })}">Simulate remotes</button>
+
 
       <!--      <button class="bg-blue text-white px-4 py-2 rounded-full" @click="videoCall.disable_e2ee()">Disable e2ee</button>-->
 <!--      <button class="bg-blue text-white px-4 py-2 rounded-full" @click="videoCall.enable_e2ee()">Enable e2ee</button>-->
-      <button class="bg-blue text-white px-4 py-2 rounded-full" @click="unpublishAllTracks">UnpublishAllTracks</button>
-      <button class="bg-blue text-white px-4 py-2 rounded-full" @click="publishAllTracks">publishAllTracks</button>
+<!--      <button class="bg-blue text-white px-4 py-2 rounded-full" @click="unpublishAllTracks">UnpublishAllTracks</button>-->
+<!--      <button class="bg-blue text-white px-4 py-2 rounded-full" @click="publishAllTracks">publishAllTracks</button>-->
 
     </div>
     <div class="flex items-center space-x-4">

@@ -8,6 +8,7 @@ import RemoteParticipant from "livekit-client/dist/src/room/participant/RemotePa
 const props = defineProps<{
   username: string;
   remoteParticipant: RemoteParticipant;
+  size: string;
 }>();
 
 const videoEl = ref<HTMLVideoElement | null>(null);
@@ -53,7 +54,7 @@ watch([props.remoteParticipant, videoEl, audioEl], ([remote, videoElement, audio
 </script>
 
 <template>
-  <div class="bg-black rounded-md p-2 flex flex-col w-1/2 justify-center">
+  <div class='bg-black rounded-md p-2 flex flex-col justify-center aspect-video m-2' :class="props.size">
   <UserDisplayName class="text-xl" :user="username" />
     <div>
       <video
