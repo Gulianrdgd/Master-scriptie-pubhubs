@@ -87,12 +87,14 @@ class Authentication {
 				const auth = this._fetchAuth();
 				auth.timelineSupport = true;
 				this.client = sdk.createClient(auth);
+				console.log(auth)
 				if(auth.deviceId) {
 					this.client.deviceId = auth.deviceId;
-				}else{
-					console.log("ERROR, should never happen")
-					this.client.deviceId = "web"
 				}
+				// }else{
+				// 	console.log("ERROR, should never happen")
+				// 	this.client.deviceId = "web"
+				// }
 			} else {
 				// Start a clean client
 				this.client = sdk.createClient({

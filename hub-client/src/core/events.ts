@@ -26,48 +26,59 @@ class Events {
 	}
 
 	initEvents() {
-		return new Promise( (resolve) => {
-			this.client.on(ClientEvent.Sync, (state: SyncState) => {
-				// console.debug('STATE:', state);
-
-				const connection = useConnection();
-				if (state == 'ERROR') {
-					connection.error();
-				}
-				if (state == 'RECONNECTING') {
-					connection.off();
-				}
-				if (state == 'SYNCING') {
-					connection.on();
-				}
-				if (state == 'PREPARED') {
-					// DEBUGGING purpose - To understand the following events.
-					// this.client.on('event' as any, (event: any) => {
-					// 	console.debug('== EVENT', event.getType());
-					// 	console.debug('== EVENT', event);
-					// });
-					resolve(true);
-				}
-			});
+		return new Promise(  (resolve) => {
 
 			// Start client sync
 			const settings = useSettings();
-			if(!this.client.deviceId){
-				this.client.deviceId = "web";
+			const deviceId = this.client.getDeviceId()!;
+			if (!deviceId) {
+				console.log('Device ID not found')
 			}
-			// this.client.initRustCrypto().then(
-			// 	() => {
-			// 		this.client.startClient({
-			// 			initialSyncLimit: settings.pagination,
-			// 			includeArchivedRooms: false,
-			// 		});
-			// 	}
-			// );
 
-			this.client.startClient({
-				initialSyncLimit: settings.pagination,
-				includeArchivedRooms: false,
-			});
+			this.client.initRustCrypto().then(
+				() => {
+					console.log('RustCrypto initialized');
+					this.client.startClient({
+						initialSyncLimit: settings.pagination,
+						includeArchivedRooms: false,
+					}).then(
+						() => {
+							console.log('Client started');
+							this.client.on(ClientEvent.Sync, (state: SyncState) => {
+								// console.debug('STATE:', state);
+
+								const connection = useConnection();
+								if (state == 'ERROR') {
+									connection.error();
+								}
+								if (state == 'RECONNECTING') {
+									connection.off();
+								}
+								if (state == 'SYNCING') {
+									connection.on();
+								}
+								if (state == 'PREPARED') {
+									// DEBUGGING purpose - To understand the following events.
+									// this.client.on('event' as any, (event: any) => {
+									// 	console.debug('== EVENT', event.getType());
+									// 	console.debug('== EVENT', event);
+									// });
+									console.log('PREPARED');
+									resolve(true);
+								}
+							});
+
+						}
+					);
+				}
+			);
+
+			console.log('Device ID', deviceId);
+
+			// this.client.startClient({
+			// 	initialSyncLimit: settings.pagination,
+			// 	includeArchivedRooms: false,
+			// });
 		});
 	}
 

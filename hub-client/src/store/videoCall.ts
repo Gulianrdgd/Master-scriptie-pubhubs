@@ -32,7 +32,7 @@ const defaultLiveKitPublishOptions: TrackPublishDefaults = {
     stopMicTrackOnMute: false,
     videoCodec: "vp8",
     videoEncoding: VideoPresets.h720.encoding,
-    backupCodec: { codec: "vp8", encoding: VideoPresets.h720.encoding },
+    backupCodec: {codec: "vp8", encoding: VideoPresets.h720.encoding},
 } as const;
 
 export const defaultLiveKitOptions: RoomOptions = {
@@ -110,16 +110,16 @@ const useVideoCall = defineStore('videoCall', {
         },
 
         getRemoteParticipants(state) {
-            if(state.livekit_room){
+            if (state.livekit_room) {
                 state.livekit_room.on
                 return state.livekit_room.remoteParticipants;
-            }else {
+            } else {
                 return new Map<string, RemoteParticipant>();
             }
         },
     },
 
-actions: {
+    actions: {
         async joinCall(matrixRTC: MatrixRTCSession, token: string, target_url: string, groupCall: GroupCall) {
             this.token = token;
             this.target_url = target_url;
@@ -140,19 +140,18 @@ actions: {
 
             this.options.e2ee = e2ee;
 
-            // @ts-expect-error: I actually don't know why this is, they should be the same TODO!
-            this.livekit_room = new LiveKitRoom(toRaw(this.options));
+            this.livekit_room = new LiveKitRoom(toRaw(this.options) as RoomOptions);
 
             await this.livekit_room.connect(target_url, token, {
-               autoSubscribe: true
+                autoSubscribe: true
             });
-            },
+        },
 
         async leaveCall() {
             this.token = null;
             this.target_url = null;
             this.call_active = false;
-            if(this.livekit_room) {
+            if (this.livekit_room) {
                 await this.livekit_room.disconnect(true);
                 await this.togglePublishTracks(false);
                 this.livekit_room = null;
@@ -166,8 +165,8 @@ actions: {
             }
         },
 
-        async endCall(){
-            if(this.groupCall){
+        async endCall() {
+            if (this.groupCall) {
                 await this.groupCall.terminate();
             }
             await this.leaveCall();
@@ -177,28 +176,28 @@ actions: {
         async togglePublishTracks(should_publish: boolean) {
             this.should_publish_tracks = should_publish;
 
-            if(this.should_publish_tracks && this.livekit_room){
-                if(this.audio_track){
-                    // @ts-expect-error: I actually don't know why this is TODO!
-                    await this.livekit_room.localParticipant.publishTrack(this.audio_track);
+            if (!this.livekit_room) {
+                return;
+            }
+
+            if (this.should_publish_tracks) {
+                if (this.audio_track) {
+                    await this.livekit_room.localParticipant.publishTrack(this.audio_track as LocalAudioTrack);
                 }
 
-                if(this.video_track){
-                    // @ts-expect-error: I actually don't know why this is TODO!
-                    await this.livekit_room.localParticipant.publishTrack(this.video_track);
+                if (this.video_track) {
+                    await this.livekit_room.localParticipant.publishTrack(this.video_track as LocalVideoTrack);
                 }
 
-            }else{
+            } else {
 
-                if(this.audio_track){
-                    // @ts-expect-error: I actually don't know why this is TODO!
-                    await this.livekit_room.localParticipant.unpublishTrack(this.audio_track);
+                if (this.audio_track) {
+                    await this.livekit_room.localParticipant.unpublishTrack(this.audio_track as LocalAudioTrack);
                     // this.audio_track.stop();
                 }
 
-                if(this.video_track){
-                    // @ts-expect-error: I actually don't know why this is TODO!
-                    await this.livekit_room.localParticipant.unpublishTrack(this.video_track);
+                if (this.video_track) {
+                    await this.livekit_room.localParticipant.unpublishTrack(this.video_track as LocalVideoTrack);
                     // this.video_track.stop();
                 }
             }
@@ -207,7 +206,7 @@ actions: {
         async changeVideoDevice(deviceId: string | null) {
 
             // detach the video track if it exists
-            if(this.video_track) {
+            if (this.video_track) {
                 this.video_track.stop();
             }
 
@@ -222,19 +221,18 @@ actions: {
 
                 });
 
-                if(this.call_active && this.should_publish_tracks && this.livekit_room && this.video_track){
-                    // @ts-expect-error: I actually don't know why this is TODO!
-                    await this.livekit_room.localParticipant.publishTrack(this.video_track);
+                if (this.call_active && this.should_publish_tracks && this.livekit_room && this.video_track) {
+                    await this.livekit_room.localParticipant.publishTrack(this.video_track as LocalVideoTrack);
                 }
 
-            }else{
+            } else {
                 this.video_track = null;
             }
         },
 
-        async changeAudioDevice(deviceId: string| null) {
+        async changeAudioDevice(deviceId: string | null) {
             // detach the audio track if it exists
-            if(this.audio_track) {
+            if (this.audio_track) {
                 this.audio_track.stop();
             }
 
@@ -247,20 +245,19 @@ actions: {
                     noiseSuppression: true
                 });
 
-                if(this.call_active && this.should_publish_tracks && this.livekit_room && this.audio_track){
-                    // @ts-expect-error: I actually don't know why this is TODO!
-                    await this.livekit_room.localParticipant.publishTrack(this.audio_track);
+                if (this.call_active && this.should_publish_tracks && this.livekit_room && this.audio_track) {
+                    await this.livekit_room.localParticipant.publishTrack(this.audio_track as LocalAudioTrack);
                 }
-            }else{
+            } else {
                 this.audio_track = null;
             }
         },
 
-        disable_e2ee(){
-          this.matrix_key_provider?.disableKeyUpdate();
+        disable_e2ee() {
+            this.matrix_key_provider?.disableKeyUpdate();
         },
 
-        enable_e2ee(){
+        enable_e2ee() {
             this.matrix_key_provider?.enableKeyUpdate();
         }
 
