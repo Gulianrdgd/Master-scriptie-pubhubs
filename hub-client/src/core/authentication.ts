@@ -1,12 +1,7 @@
 import * as sdk from 'matrix-js-sdk';
-import { MatrixClient } from 'matrix-js-sdk';
+import {LoginResponse, MatrixClient} from 'matrix-js-sdk';
 
 import { User, useUser, useDialog } from '@/store/store';
-
-type loginResponse = {
-	access_token: string;
-	user_id: string;
-};
 
 class Authentication {
 	private user = useUser();
@@ -27,11 +22,12 @@ class Authentication {
 	 * Store & Fetch locally saved access_token
 	 */
 
-	private _storeAuth(response: loginResponse) {
+	private _storeAuth(response: LoginResponse) {
 		const auth = {
 			baseUrl: this.baseUrl,
 			accessToken: response.access_token,
 			userId: response.user_id,
+			deviceId: response.device_id,
 			loginTime: String(Date.now()),
 		};
 		this.user.setUser(new User(auth.userId));
@@ -82,19 +78,14 @@ class Authentication {
 			// First check if we have an accesstoken stored
 
 			const auth = this._fetchAuth();
-			if (auth !== null && auth.baseUrl == this.baseUrl) {
+			if (auth !== null && auth.baseUrl == this.baseUrl && auth.deviceId) {
 				// Start client with token
 				const auth = this._fetchAuth();
 				auth.timelineSupport = true;
 				this.client = sdk.createClient(auth);
-				console.log(auth)
-				if(auth.deviceId) {
-					this.client.deviceId = auth.deviceId;
-				}
-				// }else{
-				// 	console.log("ERROR, should never happen")
-				// 	this.client.deviceId = "web"
-				// }
+				console.log(auth.deviceId)
+				this.client.deviceId = auth.deviceId;
+
 			} else {
 				// Start a clean client
 				this.client = sdk.createClient({
@@ -121,7 +112,10 @@ class Authentication {
 					this.client.loginWithToken(this.loginToken).then(
 						(response) => {
 							window.history.pushState('', '', '/');
-							this._storeAuth(response as loginResponse);
+							this._storeAuth(response as LoginResponse);
+							if(response.device_id) {
+								this.client.deviceId = response.device_id;
+							}
 							resolve(this.client);
 						},
 						(error) => {

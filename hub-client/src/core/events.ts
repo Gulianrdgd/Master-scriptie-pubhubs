@@ -30,7 +30,7 @@ class Events {
 
 			// Start client sync
 			const settings = useSettings();
-			const deviceId = this.client.getDeviceId()!;
+			const deviceId = this.client.getDeviceId();
 			if (!deviceId) {
 				console.log('Device ID not found')
 			}
