@@ -109,17 +109,17 @@ class Message {
 	}
 
 	isHandShakeStart() {
-		return this.type == MessageType.HandshakeStart;
+		return this.type === MessageType.HandshakeStart;
 	}
 
 	isHandShakeReady() {
-		return this.type == MessageType.HandshakeReady;
+		return this.type === MessageType.HandshakeReady;
 	}
 
 	isHandShakeMessage() {
 		const type = this.type;
-		if (typeof type == 'string') {
-			return type.substring(0, handShakePrefix.length) == handShakePrefix;
+		if (typeof type === 'string') {
+			return type.substring(0, handShakePrefix.length) === handShakePrefix;
 		}
 		return false;
 	}
@@ -173,7 +173,7 @@ const useMessageBox = defineStore('messagebox', {
 		 * If the hub-client is part of global-client (or standalone, in which case no messages are send/received)
 		 */
 		isConnected(state): Boolean {
-			return state.type == MessageBoxType.Parent || state.inIframe;
+			return state.type === MessageBoxType.Parent || state.inIframe;
 		},
 	},
 
@@ -193,7 +193,7 @@ const useMessageBox = defineStore('messagebox', {
 				this.receiverUrl = url;
 
 				// If Child: start handshake with parent
-				if (this.inIframe && this.type == MessageBoxType.Child) {
+				if (this.inIframe && this.type === MessageBoxType.Child) {
 					this.sendMessage(new Message(MessageType.HandshakeStart));
 					this.handshake = HandshakeState.Started;
 				}
@@ -202,13 +202,13 @@ const useMessageBox = defineStore('messagebox', {
 				if (this.isConnected) {
 					this._windowMessageListener = (event: MessageEvent) => {
 						// Allways test if message is from expected domain
-						if (filters.removeBackSlash(event.origin) == filters.removeBackSlash(this.receiverUrl)) {
+						if (filters.removeBackSlash(event.origin) === filters.removeBackSlash(this.receiverUrl)) {
 							const message = new Message(event.data.type, event.data.content);
 
 							// console.log('=> ' + this.type + ' RECEIVED unknown message:', message, MessageBoxType);
 
 							// Answer to handshake as parent
-							if (message.isHandShakeStart() && type == MessageBoxType.Parent) {
+							if (message.isHandShakeStart() && type === MessageBoxType.Parent) {
 								// console.log('<= ' + this.type + ' RECEIVED handshake:', this.receiverUrl);
 								this.sendMessage(new Message(MessageType.HandshakeReady));
 								this.handshake = HandshakeState.Ready;
@@ -216,7 +216,7 @@ const useMessageBox = defineStore('messagebox', {
 							}
 
 							// Answer to handshake as child
-							else if (message.isHandShakeReady() && type == MessageBoxType.Child) {
+							else if (message.isHandShakeReady() && type === MessageBoxType.Child) {
 								// console.log('=> ' + this.type + ' RECEIVED', HandshakeState.Ready);
 								this.handshake = HandshakeState.Ready;
 								resolve(true);
@@ -262,7 +262,7 @@ const useMessageBox = defineStore('messagebox', {
 		 */
 		resolveTarget() {
 			let target = null;
-			if (this.type == MessageBoxType.Child) {
+			if (this.type === MessageBoxType.Child) {
 				target = window.parent;
 			} else {
 				const el: HTMLIFrameElement | null = document.querySelector('iframe#' + iframeHubId);
@@ -298,7 +298,7 @@ const useMessageBox = defineStore('messagebox', {
 		 */
 		receivedMessage(message: Message) {
 			// console.log('<= ' + this.type + ' RECEIVED', message);
-			if (this.handshake == HandshakeState.Ready) {
+			if (this.handshake === HandshakeState.Ready) {
 				const callback = this.callbacks[message.type];
 				// console.log('<= ' + this.type + ' RECEIVED', message, callback);
 				if (callback) {

@@ -78,7 +78,7 @@ class Authentication {
 			// First check if we have an accesstoken stored
 
 			const auth = this._fetchAuth();
-			if (auth !== null && auth.baseUrl == this.baseUrl && auth.deviceId) {
+			if (auth !== null && auth.baseUrl === this.baseUrl && auth.deviceId) {
 				// Start client with token
 				const auth = this._fetchAuth();
 				auth.timelineSupport = true;
@@ -97,16 +97,16 @@ class Authentication {
 			// Check if we are logged in already
 			if (!this.client.isLoggedIn()) {
 				// First check if we came back from PubHubs login flow with a loginToken
-				if (this.loginToken == '') {
+				if (this.loginToken === '') {
 					const urlParams = new URLSearchParams(window.location.search);
 					const loginTokenParam = urlParams.get('loginToken');
-					if (typeof loginTokenParam == 'string') {
+					if (typeof loginTokenParam === 'string') {
 						this.loginToken = loginTokenParam;
 					}
 				}
 
 				//  Redirect to PubHubs login if we realy don't have a token
-				if (this.loginToken == '') {
+				if (this.loginToken === '') {
 					this.redirectToPubHubsLogin();
 				} else {
 					this.client.loginWithToken(this.loginToken).then(
@@ -122,11 +122,11 @@ class Authentication {
 							const err = error.data;
 							const dialog = useDialog();
 
-							if (typeof error == 'string' && error.indexOf('Invalid login token') < 0) {
+							if (typeof error === 'string' && error.indexOf('Invalid login token') < 0) {
 								dialog.confirm('Server Error', error).then(() => {
 									reject(error);
 								});
-							} else if (error.data.errcode == 'M_LIMIT_EXCEEDED') {
+							} else if (error.data.errcode === 'M_LIMIT_EXCEEDED') {
 								const message = `Too much login attempts.Try again in ${[Math.round(err.retry_after_ms / 1000)]} seconds.`;
 								dialog.confirm('Server Error', message).then(() => {
 									reject(error);
@@ -140,7 +140,7 @@ class Authentication {
 					);
 				}
 			} else {
-				if (this.client.baseUrl == this.baseUrl) {
+				if (this.client.baseUrl === this.baseUrl) {
 					resolve(this.client);
 				} else {
 					resolve(false);
@@ -173,4 +173,3 @@ class Authentication {
 }
 
 export { Authentication };
-

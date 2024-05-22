@@ -41,7 +41,7 @@ const useUser = defineStore('user', {
 
 	getters: {
 		isLoggedIn({ user }) {
-			return typeof user.userId == 'string';
+			return typeof user.userId === 'string';
 		},
 
 		isAdmin({ isAdministrator }) {
@@ -57,7 +57,7 @@ const useUser = defineStore('user', {
 		async fetchDisplayName(client: MatrixClient) {
 			if (client.getProfileInfo) {
 				const response: getProfileInfoResponseType = await client.getProfileInfo(this.user.userId, 'displayname');
-				if (typeof response.displayname == 'string') {
+				if (typeof response.displayname === 'string') {
 					this.user.setDisplayName(response.displayname);
 					return response.displayname;
 				}
@@ -68,7 +68,7 @@ const useUser = defineStore('user', {
 		async fetchAvatarUrl(client: MatrixClient) {
 			if (client.getProfileInfo) {
 				const response: getProfileInfoResponseType = await client.getProfileInfo(this.user.userId, 'avatar_url');
-				if (typeof response.avatar_url == 'string') {
+				if (typeof response.avatar_url === 'string') {
 					return response.avatar_url;
 				}
 			}
