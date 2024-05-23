@@ -7,7 +7,7 @@ import { TBaseEvent } from './TBaseEvent';
  *
  * @see https://spec.matrix.org/v1.8/client-server-api/#events-2
  */
-export interface TMessageEvent<C extends TMessageEventContent = TMessageEventContent> extends TBaseEvent {
+export interface TMessageEvent<C extends TMessageEventContent = TMessageEventContent> extends BaseTimelineEvent {
 	content: C;
 	type: 'm.room.message';
 }

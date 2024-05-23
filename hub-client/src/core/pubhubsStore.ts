@@ -1,6 +1,14 @@
 import { defineStore } from 'pinia';
 
-import { User as MatrixUser, MatrixClient, MatrixEvent, ContentHelpers, MatrixError, IStateEventWithRoomId } from 'matrix-js-sdk';
+import {
+	User as MatrixUser,
+	MatrixClient,
+	MatrixEvent,
+	ContentHelpers,
+	MatrixError,
+	IStateEventWithRoomId,
+	EventType
+} from 'matrix-js-sdk';
 import Room from '@/model/rooms/Room';
 import { Authentication } from '@/core/authentication';
 import { Events } from '@/core/events';
@@ -302,7 +310,7 @@ const usePubHubs = defineStore('pubhubs', {
 
 			// ?Are we catching this for a reason?
 			try {
-				await this.client.sendEvent(roomId, 'm.room.message', content, '');
+				await this.client.sendEvent(roomId, z, content, '');
 			} catch (error) {
 				console.log(error);
 			}
@@ -314,7 +322,7 @@ const usePubHubs = defineStore('pubhubs', {
 				body: 'signed message',
 				signed_message: signedMessage,
 			};
-			await this.client.sendEvent(roomId, 'm.room.message', content);
+			await this.client.sendEvent(roomId, EventType.RoomMessage, content);
 		},
 
 		async sendReadReceipt(event: MatrixEvent) {
