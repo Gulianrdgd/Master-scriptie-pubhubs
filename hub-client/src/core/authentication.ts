@@ -62,6 +62,8 @@ class Authentication {
 	public redirectToPubHubsLogin() {
 		this.client = sdk.createClient({
 			baseUrl: this.baseUrl,
+			useE2eForGroupCall: true,
+			useLivekitForGroupCalls: true,
 		});
 		this.baseUrl = window.location.href;
 		const ssoURL = this.client.getSsoLoginUrl(this.baseUrl);
@@ -82,7 +84,10 @@ class Authentication {
 				// Start client with token
 				const auth = this._fetchAuth();
 				auth.timelineSupport = true;
-				this.client = sdk.createClient(auth);
+				this.client = sdk.createClient({... auth,
+					useE2eForGroupCall: true,
+					useLivekitForGroupCalls: true,
+				});
 				console.log(auth.deviceId)
 				this.client.deviceId = auth.deviceId;
 
@@ -91,6 +96,8 @@ class Authentication {
 				this.client = sdk.createClient({
 					baseUrl: this.baseUrl,
 					timelineSupport: true,
+					useE2eForGroupCall: true,
+					useLivekitForGroupCalls: true,
 				});
 			}
 

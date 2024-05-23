@@ -62,7 +62,6 @@
 	import MessageSnippet from './MessageSnippet.vue';
 	import { PluginType } from '@/store/plugins';
 	import { TMessageEvent } from '@/model/model';
-	import { useSettings, featureFlagType } from '@/store/store';
   import MessageVideoCall from "@/components/rooms/MessageVideoCall.vue";
 
 	const connection = useConnection();

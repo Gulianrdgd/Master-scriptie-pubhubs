@@ -63,10 +63,13 @@ class VideoCallServlet(DirectServeJsonResource):
 
         # Authenticate the user
         user = await self.module_api.get_user_by_req(request)
+
+        psuedonym = user.authenticated_entity + ":" + user.device_id
+
         room_name = parse_string(request, "room_id")
 
         # Get the name that the user has requested
-        token, livekit_url = await _generate_access_token(pseudonym=user.authenticated_entity, username=user.authenticated_entity, room_name=room_name)
+        token, livekit_url = await _generate_access_token(pseudonym=psuedonym, username=psuedonym, room_name=room_name)
 
         respond_with_json(request, 200, {"token": token, "livekit_url": livekit_url}, True)
     async def _async_render_POST(self, request: SynapseRequest):

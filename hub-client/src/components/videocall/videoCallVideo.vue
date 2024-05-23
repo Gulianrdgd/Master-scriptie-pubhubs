@@ -26,20 +26,22 @@ watch([props.remoteParticipant, videoEl, audioEl], ([remote, videoElement, audio
 
   if (audioElement && audioTrack) {
     audioTrack.track?.attach(audioElement);
+    console.log("Audio track attached", audioTrack.isEncrypted);
   }
 
   if (videoElement && videoTrack)  {
 
     // I am not proud of this, but hey without it, it does not work
-    setInterval(function(){
+    setTimeout(function(){
 
       const temp_new_video_el = videoTrack.track?.attach(videoElement) as HTMLVideoElement | undefined;
 
       if(temp_new_video_el){
         videoEl.value = temp_new_video_el;
-        temp_new_video_el.play().catch((e) => {
-          console.error("Error playing video", e);
-        });
+        console.log("Video track attached", videoTrack.isEncrypted);
+        // temp_new_video_el.play().catch((e) => {
+        //   console.log("Error playing video", e);
+        // });
       }
 
     },100);

@@ -13,6 +13,7 @@ import { EventTimeLineHandler } from '@/core/eventTimeLineHandler';
 import { useSettings, User, useConnection, useUser, useRooms, Room } from '@/store/store';
 import { usePubHubs } from '@/core/pubhubsStore';
 import {GroupCall} from "matrix-js-sdk/lib/webrtc/groupCall";
+import {loadOlm} from "@/core/olm";
 class Events {
 	private readonly client: MatrixClient;
 	private readonly eventTimeHandler = new EventTimeLineHandler();
@@ -35,9 +36,13 @@ class Events {
 				console.log('Device ID not found')
 			}
 
-			this.client.initRustCrypto().then(
+			loadOlm().then(() => {
+				console.log('Olm initialized');
+
+
+			this.client.initCrypto().then(
 				() => {
-					console.log('RustCrypto initialized');
+					console.log('normal crypto initialized');
 					this.client.startClient({
 						initialSyncLimit: settings.pagination,
 						includeArchivedRooms: false,
@@ -71,7 +76,7 @@ class Events {
 						}
 					);
 				}
-			);
+			)			});
 
 			console.log('Device ID', deviceId);
 

@@ -46,6 +46,7 @@ function syncRemoteParticipants(){
   remotes.value = temp;
 }
 
+
 onMounted(async () => {
   await findDevices();
 
@@ -55,13 +56,19 @@ onMounted(async () => {
   syncRemoteParticipants();
 
   videoCall.livekit_room.removeAllListeners();
-
   videoCall.livekit_room.on('participantConnected', syncRemoteParticipants);
   videoCall.livekit_room.on('participantDisconnected', syncRemoteParticipants);
   videoCall.livekit_room.on('localTrackPublished', syncRemoteParticipants);
   videoCall.livekit_room.on('trackPublished', syncRemoteParticipants);
   videoCall.livekit_room.on('localTrackUnpublished', syncRemoteParticipants);
   videoCall.livekit_room.on('trackUnpublished', syncRemoteParticipants);
+  videoCall.livekit_room.on('encryptionError', (e) => {
+    console.error("Encryption error", e);
+  });
+  videoCall.livekit_room.on('participantEncryptionStatusChanged', (s) => {
+    console.log(s);
+  });
+
 
 });
 

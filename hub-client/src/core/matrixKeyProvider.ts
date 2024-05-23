@@ -5,9 +5,11 @@ import {MatrixRTCSession, MatrixRTCSessionEvent} from "matrix-js-sdk/lib/matrixr
 export class MatrixKeyProvider extends BaseKeyProvider {
 
     private rtcSession: MatrixRTCSession | null = null;
+    private keys = new Map<string, Map<number, Uint8Array>>();
+
 
     public constructor() {
-        super({ ratchetWindowSize: 0 });
+        super({sharedKey: false, ratchetWindowSize: 0 });
     }
 
     public setRTCSession(rtcSession: MatrixRTCSession): void {
@@ -18,6 +20,7 @@ export class MatrixKeyProvider extends BaseKeyProvider {
             );
         }
 
+        console.log("NEw keys", rtcSession.getEncryptionKeys())
         this.rtcSession = rtcSession;
 
         this.rtcSession.off(
@@ -52,30 +55,21 @@ export class MatrixKeyProvider extends BaseKeyProvider {
             encryptionKeyIndex,
         );
 
-        // console.log(
-        //     `Sent new key to livekit room=${this.rtcSession?.room.roomId} participantId=${participantId} encryptionKeyIndex=${encryptionKeyIndex}`,
-        // );
+
+        this.keys.set(participantId, new Map([[encryptionKeyIndex, encryptionKey]]));
+
+        console.log(this.keys)
+
+        console.log(
+            `Sent new key to livekit room=${this.rtcSession?.room.roomId} participantId=${participantId} encryptionKeyIndex=${encryptionKeyIndex}`,
+        );
 
         // logger.debug(
         //     `Sent new key to livekit room=${this.rtcSession?.room.roomId} participantId=${participantId} encryptionKeyIndex=${encryptionKeyIndex}`,
         // );
     };
 
-    public disableKeyUpdate(){
-        this.rtcSession?.off(
-            MatrixRTCSessionEvent.EncryptionKeyChanged,
-            this.onEncryptionKeyChanged,
-        );
-    }
 
-    public enableKeyUpdate(){
-        this.rtcSession?.off(
-            MatrixRTCSessionEvent.EncryptionKeyChanged,
-            this.onEncryptionKeyChanged,
-        );
-        this.rtcSession?.on(
-            MatrixRTCSessionEvent.EncryptionKeyChanged,
-            this.onEncryptionKeyChanged,
-        );
-    }
+
+
 }

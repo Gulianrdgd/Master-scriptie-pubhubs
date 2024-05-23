@@ -35,8 +35,6 @@ function getSize(){
   <div  v-if="props.remoteParticipants.length < 5" class="w-full h-9/12 transition-all">
     <div v-for="([username, participant]) in props.remoteParticipants" :key="username + getTrackIds(participant)" class=" flex flex-wrap items-center justify-center transition-all" >
         <VideoCallVideo :username="username" :remoteParticipant="participant" :size="getSize()"/>
-      <VideoCallVideo :username="username" :remoteParticipant="participant" :size="getSize()"/>
-      <VideoCallVideo :username="username" :remoteParticipant="participant" :size="getSize()"/>
     </div>
   </div>
   <!--  Here we should have a setup with a carousel on top and one person who is speaking ... Ugh this will take a lot of time -->

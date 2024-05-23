@@ -18,6 +18,7 @@ import {api_synapse, api_matrix} from '@/core/api';
 import {YiviSigningSessionResult, AskDisclosureMessage} from '@/lib/signedMessages';
 import {TMentions, TTextMessageEventContent, TMessageEvent} from '@/model/events/TMessageEvent';
 import {ReceiptType} from 'matrix-js-sdk/lib/@types/read_receipts';
+import {toRaw} from "vue";
 
 const usePubHubs = defineStore('pubhubs', {
     state: () => ({
@@ -43,7 +44,7 @@ const usePubHubs = defineStore('pubhubs', {
 				const x = await this.Auth.login();
                 this.client = x as MatrixClient;
 
-				const events = new Events(this.client as MatrixClient);
+				const events = new Events(toRaw(this.client) as MatrixClient);
 				await events.initEvents();
 
 				const connection = useConnection();

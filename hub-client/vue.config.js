@@ -6,6 +6,8 @@ module.exports = defineConfig({
 		resolve: {
 			fallback: {
 				crypto: false,
+				fs: false,
+				path: require.resolve("path-browserify")
 			},
 		},
 		module: {  // Add a rules section for workers
@@ -13,9 +15,18 @@ module.exports = defineConfig({
 				{
 					test: /\.e2ee-worker\.(js|ts|jsm)$/, // Targets .e2ee-worker.js, .e2ee-worker.ts, .e2ee-worker.jsm
 					use: { loader: 'worker-loader' }
-				}
-			]
+				},
+				{
+					test: /\.wasm$/,
+					type: "asset/inline",
+				},
+			],
+		},
+		experiments: {
+			asyncWebAssembly: true,
+			syncWebAssembly: true
 		}
+
 	},
 	chainWebpack(config) {
 		config.resolve.symlinks(false);

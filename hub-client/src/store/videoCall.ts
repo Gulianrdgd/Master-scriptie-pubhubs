@@ -133,6 +133,18 @@ const useVideoCall = defineStore('videoCall', {
 
             matrix_key_provider.setRTCSession(matrixRTC);
 
+            // matrix_key_provider.on(KeyProviderEvent.RatchetRequest, (e) => {
+            //     console.log('ratchetRequest', e);
+            // });
+            //
+            // matrix_key_provider.on(KeyProviderEvent.SetKey, (e) => {
+            //     console.log('setKey', e);
+            // });
+            //
+            // matrix_key_provider.on(KeyProviderEvent.KeyRatcheted, (e) => {
+            //     console.log('keyRatcheted', e);
+            // });
+
             const e2ee = {
                 keyProvider: matrix_key_provider as BaseKeyProvider,
                 worker: new Worker(new URL('livekit-client/e2ee-worker', import.meta.url))
@@ -141,10 +153,12 @@ const useVideoCall = defineStore('videoCall', {
             this.options.e2ee = e2ee;
 
             this.livekit_room = new LiveKitRoom(toRaw(this.options) as RoomOptions);
+            await this.livekit_room.setE2EEEnabled(true);
 
             await this.livekit_room.connect(target_url, token, {
                 autoSubscribe: true
             });
+
         },
 
         async leaveCall() {
@@ -174,6 +188,7 @@ const useVideoCall = defineStore('videoCall', {
 
 
         async togglePublishTracks(should_publish: boolean) {
+            console.log('togglePublishTracks', should_publish)
             this.should_publish_tracks = should_publish;
 
             if (!this.livekit_room) {
@@ -252,15 +267,6 @@ const useVideoCall = defineStore('videoCall', {
                 this.audio_track = null;
             }
         },
-
-        disable_e2ee() {
-            this.matrix_key_provider?.disableKeyUpdate();
-        },
-
-        enable_e2ee() {
-            this.matrix_key_provider?.enableKeyUpdate();
-        }
-
     },
 });
 
