@@ -66,6 +66,7 @@ const nl = {
 		nop: 'Deze functionaleit is nog niet gerealiseerd.',
 		search: 'Zoeken',
 		read_receipt: 'Gelezen door',
+		typing: 'Start typen...',
 	},
 	rooms: {
 		me: 'Ik',
@@ -79,7 +80,7 @@ const nl = {
 		private_rooms: 'Privé gesprekken',
 		private_topic: 'Een privégesprek tussen',
 		private_add: 'Nieuw privégesprek',
-		private_search_user: 'Zoek persoon, typen kan meer resultaten geven.',
+		private_search_user: 'Zoek persoon',
 		rooms: 'Gesprekken',
 		join_room: 'Wordt lid van een gesprek',
 		add_room: 'Voeg gesprek toe',
@@ -106,6 +107,7 @@ const nl = {
 		discussion: 'Discussie',
 		video_call: 'Videogesprek',
 		roomCreated: 'Gesprek aangemaakt',
+		discover: 'Ontdek gesprekken',
 	},
 	settings: {
 		userId: 'UserID',
@@ -189,8 +191,8 @@ const nl = {
 		},
 	},
 	time: {
-		today: 'vandaag',
-		yesterday: 'gisteren',
+		today: 'Vandaag',
+		yesterday: 'Gisteren',
 		daysago: '{0} dagen geleden',
 	},
 	emoji: {

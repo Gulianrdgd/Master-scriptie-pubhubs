@@ -83,7 +83,8 @@ const usePubHubs = defineStore('pubhubs', {
         async updateRooms() {
 
             const rooms = useRooms();
-            const currentRooms = this.client.getRooms();console.log('PubHubs.updateRooms');
+            const joinedRooms = (await this.client.getJoinedRooms()).joined_rooms;
+			const currentRooms = this.client.getRooms().filter((room) => joinedRooms.indexOf(room.roomId) !== -1);console.log('PubHubs.updateRooms');
             rooms.updateRoomsWithMatrixRooms(currentRooms);rooms.roomsLoaded = true;
             await rooms.fetchPublicRooms();
         },
@@ -207,8 +208,7 @@ const usePubHubs = defineStore('pubhubs', {
 
         async leaveRoom(roomId: string) {
             await this.client.leave(roomId);
-            const rooms = useRooms();
-            rooms.room(roomId)?.setHidden(true);
+
              this.updateRooms();
         },
 

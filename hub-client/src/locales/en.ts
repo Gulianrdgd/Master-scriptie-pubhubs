@@ -66,6 +66,7 @@ const en = {
 		nop: 'This feature is not implement yet.',
 		search: 'Search',
 		read_receipt: 'Read by',
+		typing: 'Start typing...',
 	},
 	rooms: {
 		me: 'Me',
@@ -79,7 +80,7 @@ const en = {
 		private_rooms: 'Private rooms',
 		private_topic: 'A private conversation between',
 		private_add: 'New private conversation',
-		private_search_user: 'Search person, typing could find more users.',
+		private_search_user: 'Search person',
 		rooms: 'Rooms',
 		join_room: 'Join a room',
 		add_room: 'Add a room',
@@ -104,8 +105,9 @@ const en = {
 		read: 'Read',
 		event: 'Event',
 		discussion: 'Discussion',
+		roomCreated: 'Room created',
+		discover: 'Discover rooms',
 		video_call: 'Video call',
-		roomCreated: 'Discussion created',
 	},
 	settings: {
 		displayname: 'Displayname',

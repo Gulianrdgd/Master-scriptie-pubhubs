@@ -201,8 +201,10 @@
 		});
 	}
 
-	function clickedAttachment() {
-		elFileInput.value?.click();
+	function clickedAttachment(event: Event) {
+		if (event instanceof MouseEvent || event instanceof KeyboardEvent) {
+			elFileInput.value?.click();
+		}
 	}
 
   function startVideoCall() {
