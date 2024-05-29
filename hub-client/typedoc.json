@@ -1,0 +1,4 @@
+{
+    "exclude": ["node_modules/*", "src/locales/*", "src/assets/*", "src/plugins/*", "src/types/*", "src/*.js"],
+    "plugin": ["typedoc-plugin-vue"]
+}
