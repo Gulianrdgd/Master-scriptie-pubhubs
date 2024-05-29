@@ -33,7 +33,13 @@ function printRemote(){
       <button class="bg-blue text-white px-4 py-2 rounded-full" @click="() => {videoCall.livekit_room?.simulateParticipants({participants:
       {count: 1, audio: true, video: true}
       })}">Simulate remotes</button>
-      <button class="bg-blue text-white px-4 py-2 rounded-full" @click="() => {videoCall.matrix_key_provider?.ratchetKey()}">Ratchet key</button>
+      <button class="bg-blue text-white px-4 py-2 rounded-full" @click="() => {
+        const otherParticipant = videoCall.livekit_room?.remoteParticipants.keys().next();
+
+        if(otherParticipant && otherParticipant.value){
+                videoCall.matrix_key_provider?.ratchetKey(otherParticipant.value as string)
+        }
+}">Ratchet key</button>
       
     </div>
     <div class="flex items-center space-x-4">
