@@ -17,7 +17,7 @@ const audioEl = ref<HTMLAudioElement | null>(null);
 const noVideoTrack = ref(false);
 
 watch([props.remoteParticipant, videoEl, audioEl], ([remote, videoElement, audioElement]) => {
-  if(!(videoElement && audioElement)){
+  if (!(videoElement && audioElement)) {
     return;
   }
 
@@ -29,25 +29,28 @@ watch([props.remoteParticipant, videoEl, audioEl], ([remote, videoElement, audio
     console.log("Audio track attached", audioTrack.isEncrypted);
   }
 
-  if (videoElement && videoTrack)  {
+  if (videoElement && videoTrack) {
 
     // I am not proud of this, but hey without it, it does not work
-    setTimeout(function(){
+    setTimeout(function () {
 
       const temp_new_video_el = videoTrack.track?.attach(videoElement) as HTMLVideoElement | undefined;
 
-      if(temp_new_video_el){
+      if (temp_new_video_el) {
         videoEl.value = temp_new_video_el;
         console.log("Video track attached", videoTrack.isEncrypted);
-        // temp_new_video_el.play().catch((e) => {
-        //   console.log("Error playing video", e);
-        // });
+
+        document.body.addEventListener("click", () => {
+          temp_new_video_el.play().catch((e) => {
+            console.log("Error playing video", e);
+          })
+        }, {once: true})
       }
 
-    },100);
+    }, 100);
 
     noVideoTrack.value = false;
-  }else {
+  } else {
     noVideoTrack.value = true;
   }
 
@@ -57,7 +60,7 @@ watch([props.remoteParticipant, videoEl, audioEl], ([remote, videoElement, audio
 
 <template>
   <div class='bg-black rounded-md p-2 flex flex-col justify-center aspect-video m-2' :class="props.size">
-  <UserDisplayName class="text-xl" :user="username" />
+    <UserDisplayName class="text-xl" :user="username"/>
     <div>
       <video
           :class="['aspect-video', 'self-center', 'w-full','h-full', 'bg-black', noVideoTrack? 'hidden' : '']"
@@ -69,7 +72,7 @@ watch([props.remoteParticipant, videoEl, audioEl], ([remote, videoElement, audio
           muted
           disablepictureinpicture="true"
       />
-      <audio ref="audioEl" autoplay />
+      <audio ref="audioEl" autoplay/>
       <div v-if="noVideoTrack" class="aspect-video w-full h-full bg-black">
         <Icon type="nocamerauser" class="text-white w-full h-full"/>
       </div>

@@ -169,8 +169,18 @@ const useVideoCall = defineStore('videoCall', {
                 await this.livekit_room.disconnect(true);
                 await this.togglePublishTracks(false);
                 this.livekit_room = null;
-
             }
+
+            if( this.matrix_key_provider){
+                this.matrix_key_provider.removeAllListeners();
+                this.matrix_key_provider = null;
+            }
+
+            if(this.options.e2ee){
+                this.options.e2ee.worker.terminate();
+                this.options.e2ee = undefined;
+            }
+
             await this.changeAudioDevice(null);
             await this.changeVideoDevice(null);
             if (this.rtc_session) {
