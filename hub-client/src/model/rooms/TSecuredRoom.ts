@@ -12,4 +12,5 @@ export interface TSecuredRoom extends TBaseRoom {
 	type?: string;
 	expiration_time_days?: number;
 	room_type?: RoomType.PH_MESSAGES_RESTRICTED;
+	encrypted?: boolean;
 }

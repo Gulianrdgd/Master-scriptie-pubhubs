@@ -107,8 +107,17 @@ class Events {
 		}
 	}
 
-	eventRoomTimeline(eventTimeLineHandler: EventTimeLineHandler, event: MatrixEvent, matrixRoom: MatrixRoom | undefined, toStartOfTimeline: boolean | undefined) {
+	async eventRoomTimeline(eventTimeLineHandler: EventTimeLineHandler, event: MatrixEvent, matrixRoom: MatrixRoom | undefined, toStartOfTimeline: boolean | undefined) {
 		if (!matrixRoom) return;
+
+		if (event.isEncrypted()) {
+			console.log('Encrypted event', event, event.event);
+			console.log("Pre", event.event.type)
+			await this.client.decryptEventIfNeeded(event);
+			const clearEvent = event.getEffectiveEvent();
+
+			event.event = clearEvent;
+		}
 
 		if ((event.event.type === 'm.room.message' && event.event.content?.msgtype === 'm.text') || event.event.type === 'org.matrix.msc3401.call') {
 			event.event = eventTimeLineHandler.transformEventContent(event.event as Partial<TEvent>);

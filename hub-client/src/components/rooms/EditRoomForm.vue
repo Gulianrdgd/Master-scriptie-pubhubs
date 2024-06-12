@@ -14,6 +14,10 @@
 				<TextInput :placeholder="$t('admin.room_type_placeholder')" v-model="editRoom.type" class="md:w-5/6" @changed="updateData('type', $event)"></TextInput>
 			</FormLine>
 			<div v-if="secured">
+        <FormLine>
+          <Label>{{ $t('admin.encryption') }}</Label>
+          <FormObjectInput v-if="editRoom.encrypted" :template="securedRoomTemplate" v-model="editRoom.encrypted"></FormObjectInput>
+        </FormLine>
 				<FormLine class="mb-2">
 					<Label>{{ $t('admin.secured_description') }}</Label>
 					<TextInput :placeholder="$t('admin.secured_description')" v-model="editRoom.user_txt" class="md:w-5/6"></TextInput>
@@ -217,6 +221,7 @@
 			if (isNewRoom.value) {
 				try {
 					await rooms.addSecuredRoom(room);
+          rooms.
 					editRoom.value = { ...emptyNewRoom };
 				} catch (error) {
 					dialog.confirm('ERROR', error as string);

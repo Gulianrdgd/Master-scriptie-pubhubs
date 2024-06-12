@@ -69,6 +69,7 @@ const useRooms = defineStore('rooms', {
 			return rooms;
 		},
 
+
 		privateRooms(): Array<Room> {
 			const rooms: Array<Room> = Object.assign([], this.roomsArray);
 			const privateRooms = rooms.filter((item) => item.getType() == RoomType.PH_MESSAGES_DM);

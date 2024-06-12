@@ -75,7 +75,6 @@ const useVideoCall = defineStore('videoCall', {
             video_track: null as LocalVideoTrack | null,
             video_devices: [] as MediaDeviceInfo[],
             selected_video_device_id: null as string | null,
-            viewState: 'hidden' as 'hidden' | 'full' | 'mini',
             options: {...defaultLiveKitOptions} as RoomOptions,
         };
     },
@@ -99,10 +98,6 @@ const useVideoCall = defineStore('videoCall', {
 
         getVideoTrack(state) {
             return state.video_track;
-        },
-
-        getViewState(state) {
-            return state.viewState;
         },
 
         getShouldPublishTracks(state) {

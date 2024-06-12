@@ -9,7 +9,7 @@ import { TBaseEvent } from './TBaseEvent';
  */
 export interface TMessageEvent<C extends TMessageEventContent = TMessageEventContent> extends TBaseEvent {
 	content: C;
-	type: 'm.room.message';
+	type: 'm.room.message' | 'm.room.encrypted';
 }
 
 // In future Matrix spec some refacturing is needed: https://github.com/matrix-org/matrix-spec-proposals/blob/main/proposals/1767-extensible-events.md

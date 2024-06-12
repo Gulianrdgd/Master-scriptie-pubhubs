@@ -78,7 +78,10 @@
 	}>();
 
 	const msgIsNotSend = computed(() => {
-		return props.event.event_id.substring(0, 1) === '~';
+    if(props.event.type === 'm.room.encrypted' ) {
+      console.log(JSON.stringify(props.event));
+    }
+		return props.event.type === 'm.room.encrypted' ? props.event.event_id.substring(0, 1) !== '$' :  props.event.event_id.substring(0, 1) === '~';
 	});
 
 	function onInReplyToClick() {
