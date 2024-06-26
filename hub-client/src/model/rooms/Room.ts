@@ -29,7 +29,6 @@ const isVisibleEvent = (event: MatrixEvent) => {
 	if (event.event.content?.msgtype) {
 		if (invisibleMessageTypes.includes(event.event.content?.msgtype)) return false;
 	}
-	if(event.isEncrypted()) return false;
 
 	return true;
 };
@@ -436,11 +435,6 @@ export default class Room {
 		this.roomRTCSession = null;
 		// this._ph.videoCallStarted = false;
 
-	}
-
-
-	get videoCallStarted(): boolean {
-		return false;
 	}
 
 	//#endregion
