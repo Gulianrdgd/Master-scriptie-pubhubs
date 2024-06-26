@@ -124,6 +124,7 @@ const useVideoCall = defineStore('videoCall', {
             const matrix_key_provider = new MatrixKeyProvider();
 
             this.rtc_session = matrixRTC;
+            
             this.matrix_key_provider = matrix_key_provider;
 
             matrix_key_provider.setRTCSession(matrixRTC);

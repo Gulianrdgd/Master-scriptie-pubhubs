@@ -29,6 +29,8 @@ const isVisibleEvent = (event: MatrixEvent) => {
 	if (event.event.content?.msgtype) {
 		if (invisibleMessageTypes.includes(event.event.content?.msgtype)) return false;
 	}
+	if(event.isEncrypted()) return false;
+
 	return true;
 };
 
@@ -291,6 +293,7 @@ export default class Room {
 			// return event.getUnsigned().replaces_state
 		});
 	}
+
 
 	/**
 	 * Checks whether the timeline contains any events sent by the user.

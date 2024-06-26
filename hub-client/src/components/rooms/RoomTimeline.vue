@@ -14,7 +14,7 @@
 </template>
 
 <script setup lang="ts">
-	import { onMounted, ref, watch, computed } from 'vue';
+import {onMounted, ref, watch, computed} from 'vue';
 	import { useRooms, useUser } from '@/store/store';
 	import { usePubHubs } from '@/core/pubhubsStore';
 	import { ElementObserver } from '@/core/elementObserver';
@@ -33,8 +33,8 @@
 	const isLoadingNewEvents = ref(false);
 	let newestEventId: string | undefined;
 
-	let oldestEventIsLoaded: Ref<boolean> = ref(false);
-	let userHasScrolled: Ref<boolean> = ref(true);
+	let oldestEventIsLoaded = ref(false);
+	let userHasScrolled = ref(true);
 	let dateInformation = ref<Number>(0);
 	type Props = {
 		room: Room;
@@ -165,6 +165,7 @@
 
 			// Wait until stable event Id is available, otherwise start observing.
 			if (newestEventId?.substring(0, 1) === '~') {
+        console.log("WAITING");
 				waitObservingEvent();
 			} else {
 				elementObserver?.setUpObserver(handlePrivateReceipt);

@@ -55,7 +55,7 @@
 </template>
 
 <script setup lang="ts">
-	import { computed, ref } from 'vue';
+import {computed, onMounted, onUpdated, ref} from 'vue';
 	import { usePubHubs } from '@/core/pubhubsStore';
 	import { RoomType, useConnection, useUser } from '@/store/store';
 	import { useMessageActions } from '@/store/message-actions';
@@ -63,6 +63,13 @@
 	import { PluginType } from '@/store/plugins';
 	import { TMessageEvent } from '@/model/model';
   import MessageVideoCall from "@/components/rooms/MessageVideoCall.vue";
+
+  onMounted(() => {
+    console.log("MOUNT", JSON.stringify(props.event.type));
+  });
+  onUpdated(() => {
+    console.log("UPDATE", JSON.stringify(props.event.type));
+  });
 
 	const connection = useConnection();
 	const messageActions = useMessageActions();
@@ -78,10 +85,7 @@
 	}>();
 
 	const msgIsNotSend = computed(() => {
-    if(props.event.type === 'm.room.encrypted' ) {
-      console.log(JSON.stringify(props.event));
-    }
-		return props.event.type === 'm.room.encrypted' ? props.event.event_id.substring(0, 1) !== '$' :  props.event.event_id.substring(0, 1) === '~';
+    return props.event.event_id.substring(0, 1) === '~';
 	});
 
 	function onInReplyToClick() {

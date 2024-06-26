@@ -111,11 +111,10 @@ class Events {
 		if (!matrixRoom) return;
 
 		if (event.isEncrypted()) {
-			console.log('Encrypted event', event, event.event);
-			console.log("Pre", event.event.type)
+			console.log("Pre", event.event.type, JSON.stringify(event))
 			await this.client.decryptEventIfNeeded(event);
 			const clearEvent = event.getEffectiveEvent();
-
+			console.log("Post", JSON.stringify(clearEvent))
 			event.event = clearEvent;
 		}
 
