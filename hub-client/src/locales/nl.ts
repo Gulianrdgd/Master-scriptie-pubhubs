@@ -1,6 +1,5 @@
 const nl = {
 	state: {
-		no_access: 'Je browser geeft geen toegang tot de cookies en lokale opslag van de Hub client. Waarschijnlijk omdat de browser de Hub client aanziet voor een `third-party tracker`. Druk op de knop om toegang te verlenen.',
 		button_request: 'Verleen toegang',
 		initial: 'Controleren of de hub client toegang heeft tot cookies en lokale opslag...',
 		requesting: 'Toegang verlenen...',
@@ -24,6 +23,7 @@ const nl = {
 		M_LIMIT_EXCEEDED: 'Te veel inlogpogingen achter elkaar. Probeer het over {0} seconden nog eens.',
 		not_send_offline: 'Geen internet connectie. Dit bericht is niet verstuurd.',
 		resend: 'Verzend opnieuw',
+		file_upload: 'Bestandsformaat niet ondersteund',
 	},
 	file: {
 		file: 'Bestand',
@@ -37,7 +37,7 @@ const nl = {
 		hub_homepage_welcome: 'Welkom bij deze Hub!',
 		hub_homepage_join: 'Doe mee met deze Hub',
 		hub_homepage_welcome_auth: 'Welkom bij deze Hub!',
-		welcome: 'Welkom bij <a href="https://pubhubs.net">PubHubs</a>.<br>PubHubs is een community netwerk gebaseerd op publieke waarden.',
+		welcome: 'Welkom',
 		highlighted_hubs: 'Uitgelichte Hubs',
 	},
 	login: {
@@ -64,7 +64,9 @@ const nl = {
 	},
 	others: {
 		nop: 'Deze functionaleit is nog niet gerealiseerd.',
-		search: 'Zoeken in deze kamer',
+		search: 'Zoeken',
+		search_room: 'Zoek in dit gesprek',
+		search_nothing_found: 'Niets gevonden',
 		read_receipt: 'Gelezen door',
 		typing: 'Start typen...',
 	},
@@ -171,6 +173,19 @@ const nl = {
 	timeformats: {
 		format12: '12 uur',
 		format24: '24 uur',
+	},
+	onboarding: {
+		info_first_time: 'Dit is uw eerste bezoek. Het is leuk dat je er bent.',
+		info_abt_pseudonym: 'Deze Hub heeft je een willekeurige naam gegeven(pseudonym)',
+		info_issue_identity: 'Deze naam verbergt om privacyredenen je identiteit. Maar voor anderen in de Hub is het niet zo handig. Je kunt zelf een bijnaam kiezen die anderen in de Hub zien:',
+		info_abt_nickname_use: 'Houd er rekening mee dat andere deelnemers ook zelfgekozen bijnamen kunnen gebruiken die niet hun echte naam hoeven te zijn.',
+		info_abt_choose_later: 'Je kunt ook later een bijnaam kiezen of deze opnieuw wijzigen.',
+		info_abt_yivi_room: 'Voor bepaalde kamers in deze Hub kan het zijn dat u wordt gevraagd (een deel van) uw identiteit bekend te maken, via de Yivi app. Dit geeft deelnemers in die ruimtes zekerheid over elkaar.',
+		info_misbehave: 'Als je je misdraagt, kun je uiteindelijk van deze Hub worden verbannen.',
+		continue: 'Doorgaan',
+		success_msg: 'Je kunt de kamers verkennen en chatten met de community!',
+		later: 'U heeft uw Hub-bijnaam nog niet ingesteld, wat u later kunt doen!',
+		update: 'bijnaam bijgewerkt',
 	},
 	message: {
 		send: 'Verstuur',
