@@ -15,6 +15,7 @@
 								<Avatar
 									:userId="user.user.userId"
 									:img="avatar"
+									:icon="true"
 									@click="
 										settingsDialog = true;
 										toggleMenu.toggleGlobalMenu();
@@ -78,7 +79,6 @@
 			</div>
 		</div>
 
-		<AddPrivateRoom v-if="addPrivateRoomDialog" @close="addPrivateRoomDialog = false"></AddPrivateRoom>
 		<Disclosure v-if="disclosureEnabled"></Disclosure>
 
 		<SettingsDialog v-if="settingsDialog" @close="settingsDialog = false"></SettingsDialog>
