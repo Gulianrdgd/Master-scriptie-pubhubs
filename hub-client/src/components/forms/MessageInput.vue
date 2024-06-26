@@ -1,6 +1,6 @@
 <template>
 	<div class="flex gap-2 items-end px-6">
-		<div name="input-container" class="min-w-3/4 w-full relative rounded-xl bg-hub-background-4 dark:bg-hub-background-4">
+		<div name="input-container" class="min-w-3/4 w-[90%] relative rounded-xl bg-hub-background-4 dark:bg-hub-background-4">
 			<!-- Floating -->
 			<div>
 				<Popover v-if="showPopover" @close="togglePopover" class="absolute bottom-[105%]">
@@ -97,11 +97,13 @@
   import {useRoute, useRouter} from 'vue-router';
 	import { useMessageActions } from '@/store/message-actions';
 	import filters from '@/core/filters';
+	import { useI18n } from 'vue-i18n';
 
 	import { YiviSigningSessionResult } from '@/lib/signedMessages';
 	import { fileUpload as uploadHandler } from '@/composables/fileUpload';
   import TextArea from "@/components/forms/TextArea.vue";
 
+	const { t } = useI18n();
   const router = useRouter();
 	const route = useRoute();
 	const rooms = useRooms();
@@ -185,8 +187,8 @@
 	function uploadFile(event: Event) {
 		const accessToken = pubhubs.Auth.getAccessToken();
 		const target = event.currentTarget as HTMLInputElement;
-		//const dialog = useDialog();
-		uploadHandler(accessToken, uploadUrl, allTypes, event, (url) => {
+		const errorMsg = t('errors.file_upload');
+		uploadHandler(errorMsg, accessToken, uploadUrl, allTypes, event, (url) => {
 			if (target) {
 				const file = target.files && target.files[0];
 				if (file) {
@@ -196,15 +198,16 @@
 					uri.value = url;
 					// display the component.
 					fileUploadDialog.value = true;
+					// Inspiration from  https://dev.to/schirrel/vue-and-input-file-clear-file-or-select-same-file-24do
+					const inputElement = elFileInput.value;
+					if (inputElement) inputElement.value = '';
 				}
 			}
 		});
 	}
 
-	function clickedAttachment(event: Event) {
-		if (event instanceof MouseEvent || event instanceof KeyboardEvent) {
-			elFileInput.value?.click();
-		}
+	function clickedAttachment() {
+		elFileInput.value?.click();
 	}
 
   function startVideoCall() {
@@ -261,6 +264,7 @@
 		showEmojiPicker.value = false;
 		signingMessage.value = false;
 		fileUploadDialog.value = false;
+		elFileInput.value = null;
 	}
 
 	function closeReplyingTo() {

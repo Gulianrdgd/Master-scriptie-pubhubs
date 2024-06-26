@@ -73,7 +73,7 @@ interface Settings {
 const defaultSettings: Settings = {
 	theme: Theme.System,
 	timeformat: TimeFormat.format24,
-	pagination: 50,
+	pagination: 150,
 	displayNameMaxLength: 40,
 	language: fallbackLanguage,
 	_i18n: {
@@ -87,19 +87,19 @@ const defaultSettings: Settings = {
 	 */
 	featureFlags: {
 		// main
-		signedMessages: true,
-		plugins: true,
-		dateSplitter: true,
-		disclosure: true,
-		unreadmarkers: true,
-		notifications: true,
-		// stable
 		// signedMessages: true,
 		// plugins: true,
 		// dateSplitter: true,
-		// disclosure: false,
+		// disclosure: true,
 		// unreadmarkers: true,
 		// notifications: true,
+		// stable
+		signedMessages: true,
+		plugins: true,
+		dateSplitter: true,
+		disclosure: false,
+		unreadmarkers: true,
+		notifications: true,
 	},
 };
 

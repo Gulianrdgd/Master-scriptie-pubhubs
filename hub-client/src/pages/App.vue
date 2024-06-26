@@ -15,6 +15,7 @@
 								<Avatar
 									:userId="user.user.userId"
 									:img="avatar"
+									:icon="true"
 									@click="
 										settingsDialog = true;
 										toggleMenu.toggleGlobalMenu();
@@ -78,7 +79,6 @@
 			</div>
 		</div>
 
-		<AddPrivateRoom v-if="addPrivateRoomDialog" @close="addPrivateRoomDialog = false"></AddPrivateRoom>
 		<Disclosure v-if="disclosureEnabled"></Disclosure>
 
 		<SettingsDialog v-if="settingsDialog" @close="settingsDialog = false"></SettingsDialog>
@@ -169,11 +169,6 @@
 				settings.setTimeFormat(message.content.timeformat as TimeFormat);
 				settings.setLanguage(message.content.language);
 				messageBoxStarted = true;
-			});
-
-			//Listen to log in time
-			messagebox.addCallback(MessageType.GlobalLoginTime, (message: Message) => {
-				pubhubs.updateLoggedInStatusBasedOnGlobalStatus(message.content as string);
 			});
 
 			//Listen to global menu change

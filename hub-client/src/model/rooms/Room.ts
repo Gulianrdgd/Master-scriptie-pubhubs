@@ -29,7 +29,6 @@ const isVisibleEvent = (event: MatrixEvent) => {
 	if (event.event.content?.msgtype) {
 		if (invisibleMessageTypes.includes(event.event.content?.msgtype)) return false;
 	}
-	if(event.isEncrypted()) return false;
 
 	return true;
 };
@@ -313,6 +312,30 @@ export default class Room {
 			?.getId();
 	}
 
+	public timelineGetNewestMessageEventId(): string | undefined {
+		// we have to check all timelines to get the newest event
+		const timelineSets = this.getTimelineSets();
+		let newestEventId: string | undefined = undefined;
+		let eventDate: Date | null = null;
+		timelineSets.forEach((timelineSet) => {
+			timelineSet.getTimelines().forEach((timeline) => {
+				timeline.getEvents().forEach((event) => {
+					const currentEventDate = event.getDate();
+					if (event.getType() === 'm.room.message' && currentEventDate != null) {
+						if (!eventDate) {
+							eventDate = currentEventDate;
+							newestEventId = event.getId();
+						}
+						if (currentEventDate > eventDate) {
+							newestEventId = event.getId();
+						}
+					}
+				});
+			});
+		});
+		return newestEventId;
+	}
+
 	//#endregion
 
 	public getVisibleTimeline() {
@@ -412,11 +435,6 @@ export default class Room {
 		this.roomRTCSession = null;
 		// this._ph.videoCallStarted = false;
 
-	}
-
-
-	get videoCallStarted(): boolean {
-		return false;
 	}
 
 	//#endregion

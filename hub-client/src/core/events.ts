@@ -115,6 +115,7 @@ class Events {
 			await this.client.decryptEventIfNeeded(event);
 			const clearEvent = event.getEffectiveEvent();
 			console.log("Post", JSON.stringify(clearEvent))
+
 			event.event = clearEvent;
 		}
 
