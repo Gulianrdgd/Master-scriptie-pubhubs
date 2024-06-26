@@ -11,7 +11,7 @@ import {
     AudioPresets,
     VideoPreset,
     ScreenSharePresets,
-    DefaultReconnectPolicy, BaseKeyProvider,
+    DefaultReconnectPolicy, BaseKeyProvider, setLogLevel,
 } from "livekit-client";
 import {MatrixKeyProvider} from "@/core/matrixKeyProvider";
 import {MatrixRTCSession} from "matrix-js-sdk/lib/matrixrtc/MatrixRTCSession";
@@ -143,12 +143,16 @@ const useVideoCall = defineStore('videoCall', {
 
             const e2ee = {
                 keyProvider: matrix_key_provider as BaseKeyProvider,
-                worker: new Worker(new URL('livekit-client/e2ee-worker', import.meta.url))
+                worker: new Worker(new URL('livekit-client/e2ee-worker', import.meta.url)),
             };
+
+            // @ts-expect-error: Jaa dit is weird tis ook alleen voor debugging
+            setLogLevel('debug', 'lk-e2ee');
 
             this.options.e2ee = e2ee;
 
             this.livekit_room = new LiveKitRoom(toRaw(this.options) as RoomOptions);
+
             await this.livekit_room.setE2EEEnabled(true);
 
             await this.livekit_room.connect(target_url, token, {

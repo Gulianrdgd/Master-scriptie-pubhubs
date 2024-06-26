@@ -9,7 +9,7 @@ export class MatrixKeyProvider extends BaseKeyProvider {
 
 
     public constructor() {
-        super({sharedKey: false, ratchetWindowSize: 0 });
+        super({sharedKey: false});
     }
 
     public setRTCSession(rtcSession: MatrixRTCSession): void {
