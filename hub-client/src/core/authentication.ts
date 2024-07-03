@@ -93,7 +93,7 @@ class Authentication {
 		return new Promise((resolve, reject) => {
 			// First check if we have an accesstoken stored
 			const auth = this._fetchAuth();
-			if (auth !== null && auth.baseUrl === this.baseUrl && auth.deviceId) {
+			if (auth !== null && auth.baseUrl === this.baseUrl) {
 				// Start client with token
 				const auth = this._fetchAuth();
 				auth.timelineSupport = true;
@@ -101,8 +101,9 @@ class Authentication {
 					useE2eForGroupCall: true,
 					useLivekitForGroupCalls: true,
 				});
-				console.log(auth.deviceId)
-				this.client.deviceId = auth.deviceId;
+
+				console.log('Logged in promise', auth.deviceId, this.client.deviceId);
+				this.client.deviceId = auth.deviceId || null;
 
 			} else {
 				// Start a clean client
@@ -133,9 +134,10 @@ class Authentication {
 						(response) => {
 							window.history.pushState('', '', '/');
 							this._storeAuth(response as LoginResponse);
-							if(response.device_id) {
-								this.client.deviceId = response.device_id;
-							}
+							console.log('Logged in w token', response.device_id, this.client.deviceId);
+							// if(response.device_id) {
+							// 	this.client.deviceId = response.device_id;
+							// }
 							resolve(this.client);
 						},
 						(error) => {

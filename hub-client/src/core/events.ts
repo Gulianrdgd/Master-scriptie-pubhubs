@@ -36,6 +36,8 @@ class Events {
 				console.log('Device ID not found')
 			}
 
+			console.log(deviceId)
+
 			// loadOlm().then(() => {
 			// 	console.log('Olm initialized');
 			//
