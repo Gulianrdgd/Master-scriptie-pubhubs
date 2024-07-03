@@ -15,8 +15,7 @@ function getTrackIds(participant: RemoteParticipant){
 
 function getSize(){
   if(props.remoteParticipants.length === 1){
-    return 'w-5/12';
-    // return 'w-11/12';
+    return 'w-11/12';
   }
 
   if( props.remoteParticipants.length > 1 && props.remoteParticipants.length < 5 ){

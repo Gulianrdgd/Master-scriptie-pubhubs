@@ -11,7 +11,7 @@ import {
     AudioPresets,
     VideoPreset,
     ScreenSharePresets,
-    DefaultReconnectPolicy, BaseKeyProvider, setLogLevel,
+    DefaultReconnectPolicy, BaseKeyProvider,
 } from "livekit-client";
 import {MatrixKeyProvider} from "@/core/matrixKeyProvider";
 import {MatrixRTCSession} from "matrix-js-sdk/lib/matrixrtc/MatrixRTCSession";
@@ -74,6 +74,7 @@ const useVideoCall = defineStore('videoCall', {
             selected_audio_device_id: null as string | null,
             video_track: null as LocalVideoTrack | null,
             video_devices: [] as MediaDeviceInfo[],
+
             selected_video_device_id: null as string | null,
             options: {...defaultLiveKitOptions} as RoomOptions,
         };
@@ -129,25 +130,12 @@ const useVideoCall = defineStore('videoCall', {
 
             matrix_key_provider.setRTCSession(matrixRTC);
 
-            // matrix_key_provider.on(KeyProviderEvent.RatchetRequest, (e) => {
-            //     console.log('ratchetRequest', e);
-            // });
-            //
-            // matrix_key_provider.on(KeyProviderEvent.SetKey, (e) => {
-            //     console.log('setKey', e);
-            // });
-            //
-            // matrix_key_provider.on(KeyProviderEvent.KeyRatcheted, (e) => {
-            //     console.log('keyRatcheted', e);
-            // });
-
             const e2ee = {
                 keyProvider: matrix_key_provider as BaseKeyProvider,
                 worker: new Worker(new URL('livekit-client/e2ee-worker', import.meta.url)),
             };
 
-            // @ts-expect-error: Jaa dit is weird tis ook alleen voor debugging
-            setLogLevel('debug', 'lk-e2ee');
+            // setLogLevel('debug', 'lk-e2ee');
 
             this.options.e2ee = e2ee;
 
@@ -156,6 +144,7 @@ const useVideoCall = defineStore('videoCall', {
             await this.livekit_room.setE2EEEnabled(true);
 
             await this.livekit_room.connect(target_url, token, {
+                // Needed to subscribe to all tracks
                 autoSubscribe: true
             });
 

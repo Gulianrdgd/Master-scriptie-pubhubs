@@ -19,7 +19,6 @@ const router = useRouter();
 
 let connectInputs = ref(false);
 
-
 async function findDevices() {
   const audioDevices = await LivekitRoom.getLocalDevices('audioinput');
 
@@ -36,7 +35,7 @@ async function findDevices() {
   });
 }
 
-function syncRemoteParticipants(){
+function syncRemoteParticipants() {
   const temp: [string, RemoteParticipant][] = [];
 
   videoCall.livekit_room?.remoteParticipants.forEach((p) => {
@@ -63,11 +62,13 @@ onMounted(async () => {
   videoCall.livekit_room.on('localTrackUnpublished', syncRemoteParticipants);
   videoCall.livekit_room.on('trackUnpublished', syncRemoteParticipants);
   videoCall.livekit_room.on('encryptionError', (e) => {
+    syncRemoteParticipants();
     console.error("Encryption error", e);
   });
-  videoCall.livekit_room.on('participantEncryptionStatusChanged', (s) => {
-    console.log(s);
-  });
+  videoCall.livekit_room.on('participantEncryptionStatusChanged', syncRemoteParticipants);
+  videoCall.livekit_room.on('trackUnsubscribed', syncRemoteParticipants);
+  videoCall.livekit_room.on('trackSubscribed', syncRemoteParticipants);
+  videoCall.livekit_room.on('videoPlaybackChanged', syncRemoteParticipants);
 
 
 });
@@ -84,7 +85,6 @@ function joinRoom(){
 }
 
 let remotes = ref<[string, RemoteParticipant][]>([]);
-
 
 </script>
 

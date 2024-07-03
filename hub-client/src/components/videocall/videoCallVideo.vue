@@ -25,15 +25,16 @@ watch([props.remoteParticipant, videoEl, audioEl], ([remote, videoElement, audio
   const audioTrack = remote.getTrackPublication(Track.Source.Microphone);
 
   if (audioElement && audioTrack) {
+    audioTrack.setSubscribed(true);
     audioTrack.track?.attach(audioElement);
     console.log("Audio track attached", audioTrack.isEncrypted);
   }
 
   if (videoElement && videoTrack) {
-
+    videoTrack.setSubscribed(true);
 
     // I am not proud of this, but hey without it, it does not work
-    // setTimeout(function () {
+    setTimeout(function () {
 
       const temp_new_video_el = videoTrack.track?.attach(videoElement) as HTMLVideoElement | undefined;
 
@@ -41,7 +42,7 @@ watch([props.remoteParticipant, videoEl, audioEl], ([remote, videoElement, audio
         videoEl.value = temp_new_video_el;
         console.log("Video track attached", videoTrack.isEncrypted);
       }
-    // }, 100);
+    }, 100);
 
     document.body.addEventListener("click", () => {
       let videoTrackNew = remote.getTrackPublication(Track.Source.Camera);
