@@ -44,12 +44,18 @@ watch([props.remoteParticipant, videoEl, audioEl], ([remote, videoElement, audio
     // }, 100);
 
     document.body.addEventListener("click", () => {
-      const temp_new_video_el = videoTrack.track?.attach(videoElement) as HTMLVideoElement | undefined;
+      let videoTrackNew = remote.getTrackPublication(Track.Source.Camera);
+
+      if(!videoTrackNew){
+        return;
+      }
+
+      const temp_new_video_el = videoTrackNew.track?.attach(videoElement) as HTMLVideoElement | undefined;
       if (temp_new_video_el) {
         videoEl.value = temp_new_video_el;
-        temp_new_video_el.play().catch((e) => {
-          console.log("Error playing video", e);
-        })
+        // temp_new_video_el.play().catch((e) => {
+        //   console.log("Error playing video", e);
+        // })
       }
 
     }, {once: true})

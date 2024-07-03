@@ -188,14 +188,7 @@ const usePubHubs = defineStore('pubhubs', {
                     creation_content: {type: RoomType.PH_MESSAGES_DM},
                     topic: `PRIVATE: ${me.userId}, ${other.userId}`,
                     history_visibility: 'shared',
-                    guest_can_join: false,
-                    initial_state: [{
-                        type: "m.room.encryption",
-                        state_key: "",
-                        content: {
-                            algorithm: "m.megolm.v1.aes-sha2",
-                        },
-                    }],
+                    guest_can_join: false
                 });
                 // Returns invalid user id - 400, when no such user. So nice
                 return room;

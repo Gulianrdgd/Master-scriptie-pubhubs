@@ -110,13 +110,11 @@ class Events {
 	async eventRoomTimeline(eventTimeLineHandler: EventTimeLineHandler, event: MatrixEvent, matrixRoom: MatrixRoom | undefined, toStartOfTimeline: boolean | undefined) {
 		if (!matrixRoom) return;
 
-		if (event.isEncrypted()) {
-			console.log("Pre", event.event.type, JSON.stringify(event))
-			await this.client.decryptEventIfNeeded(event);
-			const clearEvent = event.getEffectiveEvent();
-			console.log("Post", JSON.stringify(clearEvent))
-			event.event = clearEvent;
-		}
+		// if (event.isEncrypted()) {
+		// 	await this.client.decryptEventIfNeeded(event);
+		// 	const clearEvent = event.getEffectiveEvent();
+		// 	event.event = clearEvent;
+		// }
 
 		if ((event.event.type === 'm.room.message' && event.event.content?.msgtype === 'm.text') || event.event.type === 'org.matrix.msc3401.call') {
 			event.event = eventTimeLineHandler.transformEventContent(event.event as Partial<TEvent>);

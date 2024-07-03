@@ -55,7 +55,7 @@
 </template>
 
 <script setup lang="ts">
-import {computed, onMounted, onUpdated, ref} from 'vue';
+import {computed, ref} from 'vue';
 	import { usePubHubs } from '@/core/pubhubsStore';
 	import { RoomType, useConnection, useUser } from '@/store/store';
 	import { useMessageActions } from '@/store/message-actions';
@@ -63,13 +63,6 @@ import {computed, onMounted, onUpdated, ref} from 'vue';
 	import { PluginType } from '@/store/plugins';
 	import { TMessageEvent } from '@/model/model';
   import MessageVideoCall from "@/components/rooms/MessageVideoCall.vue";
-
-  onMounted(() => {
-    console.log("MOUNT", JSON.stringify(props.event.type));
-  });
-  onUpdated(() => {
-    console.log("UPDATE", JSON.stringify(props.event.type));
-  });
 
 	const connection = useConnection();
 	const messageActions = useMessageActions();
