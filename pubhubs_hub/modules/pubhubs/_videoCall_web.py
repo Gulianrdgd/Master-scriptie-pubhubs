@@ -67,6 +67,10 @@ class VideoCallServlet(DirectServeJsonResource):
 
         room_name = parse_string(request, "room_id")
 
+        if not self.store.is_allowed(user.authenticated_entity, room_name):
+            respond_with_json(request, 403, {"error": "User is not allowed to join this room"}, True)
+            return
+
         # Get the name that the user has requested
         token, livekit_url = await _generate_access_token(pseudonym=psuedonym, username=psuedonym, room_name=room_name)
 
