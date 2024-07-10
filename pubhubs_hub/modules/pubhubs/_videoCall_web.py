@@ -13,7 +13,7 @@ from ._store import YiviRoomJoinStore
 logger = logging.getLogger(__name__)
 
 
-async def _create_room(room_id):
+async def _create_room(room_name):
     # Hardcoded url for now, we could have multiple servers up and balance between them.
     lkapi = api.LiveKitAPI(
         LIVEKIT_URL,
@@ -23,10 +23,10 @@ async def _create_room(room_id):
     livekit_rooms = await lkapi.room.list_rooms(api.ListRoomsRequest())
 
     for room in livekit_rooms.rooms:
-        if room.name == room_id:
+        if room.name == room_name:
             return room
 
-    room = await lkapi.room.create_room(api.CreateRoomRequest(name=room_id))
+    room = await lkapi.room.create_room(api.CreateRoomRequest(name=room_name))
 
     await lkapi.aclose()
 
@@ -81,10 +81,15 @@ class VideoCallServlet(DirectServeJsonResource):
 
         user = await self.module_api.get_user_by_req(request)
 
-        room_id = parse_string(request, "room_id")
+        room_name = parse_string(request, "room_id")
+
+        if not self.store.is_allowed(user.authenticated_entity, room_name):
+            respond_with_json(request, 403, {"error": "User is not allowed to join this room"}, True)
+            return
+
 
         try:
-            asyncio.get_event_loop().run_until_complete(_create_room(room_id=room_id))
+            asyncio.get_event_loop().run_until_complete(_create_room(room_name=room_name))
             respond_with_json(request, 200, {}, True)
         except TypeError as e:
             print("ERROR", e)
