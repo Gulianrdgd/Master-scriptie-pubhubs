@@ -27,7 +27,6 @@ watch([props.remoteParticipant, videoEl, audioEl], ([remote, videoElement, audio
   if (audioElement && audioTrack) {
     audioTrack.setSubscribed(true);
     audioTrack.track?.attach(audioElement);
-    console.log("Audio track attached", audioTrack.isEncrypted);
   }
 
   if (videoElement && videoTrack) {
@@ -40,7 +39,6 @@ watch([props.remoteParticipant, videoEl, audioEl], ([remote, videoElement, audio
 
       if (temp_new_video_el) {
         videoEl.value = temp_new_video_el;
-        console.log("Video track attached", videoTrack.isEncrypted);
       }
     }, 100);
 
@@ -54,9 +52,6 @@ watch([props.remoteParticipant, videoEl, audioEl], ([remote, videoElement, audio
       const temp_new_video_el = videoTrackNew.track?.attach(videoElement) as HTMLVideoElement | undefined;
       if (temp_new_video_el) {
         videoEl.value = temp_new_video_el;
-        // temp_new_video_el.play().catch((e) => {
-        //   console.log("Error playing video", e);
-        // })
       }
 
     }, {once: true})

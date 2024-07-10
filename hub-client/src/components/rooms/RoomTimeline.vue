@@ -165,7 +165,6 @@ import {onMounted, ref, watch, computed} from 'vue';
 
 			// Wait until stable event Id is available, otherwise start observing.
 			if (newestEventId?.substring(0, 1) === '~') {
-        console.log("WAITING");
 				waitObservingEvent();
 			} else {
 				elementObserver?.setUpObserver(handlePrivateReceipt);

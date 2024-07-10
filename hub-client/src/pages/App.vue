@@ -181,9 +181,6 @@
 				hubSettings.mobileHubMenu = message.content as boolean;
 			});
 
-      messagebox.addCallback(MessageType.SetAudioDevices, (message: Message) => {
-        console.log(message.content, "MESSAGE CONTENT")
-      });
 			// Ask for syncing
 			messagebox.sendMessage(new Message(MessageType.Sync));
 

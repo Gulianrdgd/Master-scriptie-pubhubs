@@ -88,7 +88,6 @@ class Authentication {
 					useE2eForGroupCall: true,
 					useLivekitForGroupCalls: true,
 				});
-				console.log(auth.deviceId)
 				this.client.deviceId = auth.deviceId;
 
 			} else {

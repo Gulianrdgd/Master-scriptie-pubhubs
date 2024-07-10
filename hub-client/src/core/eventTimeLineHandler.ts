@@ -6,6 +6,8 @@ import { TEvent } from '@/model/events/TEvent';
 import { usePlugins } from '@/store/plugins';
 import { useRooms } from '@/store/rooms';
 import { sanitizeHtml } from '@/core/sanitizer';
+import {router} from "@/core/router";
+import useVideoCall from "@/store/videoCall";
 
 /**
  * This class handles all changes that should be made to incoming timeline events
@@ -111,6 +113,7 @@ class EventTimeLineHandler {
 	}
 
 	private checkVideoCallEventContent(event: Partial<TEvent>) {
+
 		// @ts-expect-error: This is a hack to get the event content
 		if(!(event.event_id && event.content && event.content['m.type'] === 'm.video')) {
 			return event;
@@ -118,30 +121,20 @@ class EventTimeLineHandler {
 
 		const eventContent = event.content as TVideoMessageEventContent;
 		eventContent.msgtype = 'm.videocall';
-		// if(event.type === 'org.matrix.msc3401.call' && event.content['m.terminated'] && event.content['m.terminated'] === 'call_ended') {
-		//
-		// 	// const previous_id = event.unsigned.replaces_state;
-		// 	//
-		// 	// for(let i = idx; i >= 0; i--){
-		// 	// 	const previous_event = timeline[i].event as unknown as Event;
-		// 	// 	if(previous_event.event_id === previous_id){
-		// 	// 		previous_event.content.hide = true;
-		// 	// 		event.content.time = event.origin_server_ts - previous_event.origin_server_ts;
-		// 	// 		break;
-		// 	// 	}
-		// 	// }
-		//
-		// }
 
-		if(eventContent['m.intent'] !== 'ringing' && eventContent['m.terminated']) {
+		if(eventContent['m.intent'] !== 'ringing' && !eventContent['m.terminated']) {
 			// IDEA: if call then add it to list
 			this.previous_calls.push(event.event_id);
 		}else if(eventContent['m.terminated'] && eventContent['m.terminated'] === 'call_ended'){
 			// IDEA: if it is already in there and terminated then terminate
 			this.previous_calls = this.previous_calls.filter((call_id) => call_id !== event.event_id);
-			// TODO: Previous should be hidden
-			// eventContent.hide = true;
 			event.content = eventContent;
+
+			if (router.currentRoute.value.name === 'videocall') {
+				const videoCall = useVideoCall();
+				videoCall.leaveCall();
+				router.back();
+			}
 		}
 
 		return event;

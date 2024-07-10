@@ -1,18 +1,17 @@
+import asyncio
 import logging
 
+from livekit import api
 from synapse.http.server import DirectServeJsonResource, respond_with_json
 from synapse.http.servlet import parse_string
 from synapse.http.site import SynapseRequest
 from synapse.module_api import ModuleApi
 
-from livekit import api
-import asyncio
-import re
-
-from ._constants import LIVEKIT_URL, CLIENT_URL
+from ._constants import LIVEKIT_URL
 from ._store import YiviRoomJoinStore
 
 logger = logging.getLogger(__name__)
+
 
 async def _create_room(room_id):
     # Hardcoded url for now, we could have multiple servers up and balance between them.
@@ -59,7 +58,7 @@ class VideoCallServlet(DirectServeJsonResource):
         self.module_api = api
 
     async def _async_render_GET(self, request: SynapseRequest):
-        """Get a access token"""
+        """Get an access token"""
 
         # Authenticate the user
         user = await self.module_api.get_user_by_req(request)
@@ -72,6 +71,7 @@ class VideoCallServlet(DirectServeJsonResource):
         token, livekit_url = await _generate_access_token(pseudonym=psuedonym, username=psuedonym, room_name=room_name)
 
         respond_with_json(request, 200, {"token": token, "livekit_url": livekit_url}, True)
+
     async def _async_render_POST(self, request: SynapseRequest):
         """Create a new video call room"""
 

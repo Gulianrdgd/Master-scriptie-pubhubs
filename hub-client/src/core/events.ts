@@ -12,7 +12,6 @@ import { TEvent } from '@/model/events/TEvent';
 import { EventTimeLineHandler } from '@/core/eventTimeLineHandler';
 import { useSettings, User, useConnection, useUser, useRooms, Room } from '@/store/store';
 import { usePubHubs } from '@/core/pubhubsStore';
-import {GroupCall} from "matrix-js-sdk/lib/webrtc/groupCall";
 
 class Events {
 	private readonly client: MatrixClient;
@@ -33,9 +32,10 @@ class Events {
 			const settings = useSettings();
 			const deviceId = this.client.getDeviceId();
 			if (!deviceId) {
-				console.log('Device ID not found')
+				console.error('Device ID not found')
 			}
 
+			// If for some reason we want to use the old OLM encryption, we can use this.
 			// loadOlm().then(() => {
 			// 	console.log('Olm initialized');
 			//
@@ -68,7 +68,6 @@ class Events {
 									// 	console.debug('== EVENT', event.getType());
 									// 	console.debug('== EVENT', event);
 									// });
-									console.log('PREPARED');
 									resolve(true);
 								}
 							});
@@ -77,13 +76,6 @@ class Events {
 					);
 				}
 			)
-
-			console.log('Device ID', deviceId);
-
-			// this.client.startClient({
-			// 	initialSyncLimit: settings.pagination,
-			// 	includeArchivedRooms: false,
-			// });
 		});
 	}
 
@@ -168,17 +160,6 @@ class Events {
 				}
 			}
 		};
-	}
-
-	eventVideoCallState(call: GroupCall) {
-		console.debug('== GroupCallEventHandlerEvent.Incoming', call, call.state !== 'ended');
-
-		// const rooms = useRooms();
-
-		// const roomId = call.room.roomId;
-		// rooms.rooms[roomId].videoCallStarted = call.state !== 'ended';
-		// rooms.rooms[roomId].setUpAndJoinMatrixVideoCall();
-		// TODO: Add video call receive code
 	}
 }
 

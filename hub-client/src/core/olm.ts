@@ -14,6 +14,8 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
+// Needed if we want to use the old OLM encryption
+
 import Olm from "@matrix-org/olm";
 // @ts-expect-error: OLM_OPTIONS is not defined in the olm library
 import olmWasmPath from "@matrix-org/olm/olm.wasm?url";

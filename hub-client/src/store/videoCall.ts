@@ -30,9 +30,9 @@ const defaultLiveKitPublishOptions: TrackPublishDefaults = {
     videoSimulcastLayers: [VideoPresets.h180, VideoPresets.h360] as VideoPreset[],
     screenShareEncoding: ScreenSharePresets.h1080fps30.encoding,
     stopMicTrackOnMute: false,
-    videoCodec: "vp8",
+    videoCodec: "vp9",
     videoEncoding: VideoPresets.h720.encoding,
-    backupCodec: {codec: "vp8", encoding: VideoPresets.h720.encoding},
+    // backupCodec: {codec: "vp8", encoding: VideoPresets.h720.encoding},
 } as const;
 
 export const defaultLiveKitOptions: RoomOptions = {
@@ -107,7 +107,6 @@ const useVideoCall = defineStore('videoCall', {
 
         getRemoteParticipants(state) {
             if (state.livekit_room) {
-                state.livekit_room.on
                 return state.livekit_room.remoteParticipants;
             } else {
                 return new Map<string, RemoteParticipant>();
@@ -180,14 +179,13 @@ const useVideoCall = defineStore('videoCall', {
 
         async endCall() {
             if (this.groupCall) {
-                await this.groupCall.terminate();
+                await this.groupCall.terminate(true);
             }
             await this.leaveCall();
         },
 
 
         async togglePublishTracks(should_publish: boolean) {
-            console.log('togglePublishTracks', should_publish)
             this.should_publish_tracks = should_publish;
 
             if (!this.livekit_room) {

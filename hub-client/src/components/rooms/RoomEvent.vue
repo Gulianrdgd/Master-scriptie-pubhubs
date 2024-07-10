@@ -46,7 +46,6 @@
 					<MessageSigned v-if="event.content.msgtype === 'pubhubs.signed_message'" :message="event.content.signed_message"></MessageSigned>
 					<MessageFile v-if="event.content.msgtype === 'm.file'" :message="event.content"></MessageFile>
 					<MessageImage v-if="event.content.msgtype === 'm.image'" :message="event.content"></MessageImage>
-<!--          TODO: Check if this msg type is correct-->
           <MessageVideoCall v-if="event.content.msgtype == 'm.videocall'" :room_id="event.room_id" :call="event.content"></MessageVideoCall>
 				</template>
 			</div>
