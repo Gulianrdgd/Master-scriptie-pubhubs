@@ -69,7 +69,7 @@
 			</div>
 		</Button>
 
-    <Button v-if="showVideoCall" class="h-[50px] min-w-24 ml-2 mr-2 flex items-center rounded-xl" @click="startVideoCall()"><Icon type="videocall" size="sm" class="mr-px fill-current stroke-current"></Icon>{{ $t('rooms.video_call') }}</Button>
+    <Button v-if="settings.isFeatureEnabled(featureFlagType.videocalls)" class="h-[50px] min-w-24 ml-2 mr-2 flex items-center rounded-xl" @click="startVideoCall()"><Icon type="videocall" size="sm" class="mr-px fill-current stroke-current"></Icon>{{ $t('rooms.video_call') }}</Button>
 
     <!-- Floating menus -->
 		<Mention :msg="value" :top="caretPos.top" :left="caretPos.left" @click="mentionUser($event)"></Mention>
@@ -92,11 +92,12 @@
 	import { watch, ref, onMounted, computed } from 'vue';
 	import { useFormInputEvents, usedEvents } from '@/composables/useFormInputEvents';
 	import { useMatrixFiles } from '@/composables/useMatrixFiles';
-	import { useRooms } from '@/store/store';
+  import {featureFlagType, useRooms, useSettings} from '@/store/store';
 	import { usePubHubs } from '@/core/pubhubsStore';
   import {useRoute, useRouter} from 'vue-router';
 	import { useMessageActions } from '@/store/message-actions';
 	import filters from '@/core/filters';
+
 
 	import { YiviSigningSessionResult } from '@/lib/signedMessages';
 	import { fileUpload as uploadHandler } from '@/composables/fileUpload';
@@ -107,15 +108,15 @@
 	const rooms = useRooms();
 	const pubhubs = usePubHubs();
 	const messageActions = useMessageActions();
+  const settings = useSettings();
 
-	const emit = defineEmits(usedEvents);
+  const emit = defineEmits(usedEvents);
 	const { value, reset, changed, cancel } = useFormInputEvents(emit);
 	const { allTypes, getTypesAsString, uploadUrl } = useMatrixFiles();
 
 	const buttonEnabled = ref(false);
 	const showPopover = ref(false);
 	const signingMessage = ref(false);
-  const showVideoCall = ref(true);
 	const showEmojiPicker = ref(false);
 	const fileUploadDialog = ref(false);
 	const fileInfo = ref<File>();

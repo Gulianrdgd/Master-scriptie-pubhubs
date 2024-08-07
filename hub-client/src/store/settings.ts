@@ -13,6 +13,7 @@ enum featureFlagType {
 	disclosure = 'disclosure',
 	unreadMarkers = 'unreadmarkers',
 	notifications = 'notifications',
+	videocalls = 'videocalls',
 	// readReceipt = 'readReceipt',
 }
 
@@ -67,6 +68,7 @@ interface Settings {
 		disclosure: boolean;
 		unreadmarkers: boolean;
 		notifications: boolean;
+		videocalls: boolean;
 	};
 }
 
@@ -93,6 +95,7 @@ const defaultSettings: Settings = {
 		disclosure: true,
 		unreadmarkers: true,
 		notifications: true,
+		videocalls: true,
 		// stable
 		// signedMessages: true,
 		// plugins: true,
@@ -100,6 +103,7 @@ const defaultSettings: Settings = {
 		// disclosure: false,
 		// unreadmarkers: true,
 		// notifications: true,
+		// videocalls: false,
 	},
 };
 

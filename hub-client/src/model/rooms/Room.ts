@@ -9,6 +9,7 @@ import { TRoomMember } from './TRoomMember';
 import useVideoCall from "@/store/videoCall";
 import {api_synapse} from "@/core/api";
 import {MatrixRTCSession} from "matrix-js-sdk/lib/matrixrtc/MatrixRTCSession";
+import {featureFlagType, useSettings} from "@/store/store";
 
 enum RoomType {
 	SECURED = 'ph.messages.restricted',
@@ -21,7 +22,8 @@ const BotName = {
 };
 
 /** event filters */
-const visibleEventTypes = ['m.room.message', 'org.matrix.msc3401.call'];
+const visibleEventTypes = ['m.room.message'];
+
 const invisibleMessageTypes = ['m.notice']; // looking in event.content.msgtype
 const isMessageEvent = (event: MatrixEvent) => event.event.type === 'm.room.message';
 const isVisibleEvent = (event: MatrixEvent) => {
@@ -30,6 +32,7 @@ const isVisibleEvent = (event: MatrixEvent) => {
 		if (invisibleMessageTypes.includes(event.event.content?.msgtype)) return false;
 	}
 	if(event.isEncrypted()) return false;
+
 
 	return true;
 };
@@ -76,6 +79,11 @@ export default class Room {
 
 		this.userStore = useUser();
 		this.roomsStore = useRooms();
+
+		const settings = useSettings();
+		if(settings.isFeatureEnabled(featureFlagType.videocalls)){
+			visibleEventTypes.push('org.matrix.msc3401.call');
+		}
 
 		this.roomRTCSession = null;
 	}
@@ -412,11 +420,6 @@ export default class Room {
 		this.roomRTCSession = null;
 		// this._ph.videoCallStarted = false;
 
-	}
-
-
-	get videoCallStarted(): boolean {
-		return false;
 	}
 
 	//#endregion
