@@ -62,7 +62,7 @@
 	const pubHubsUrl = _env.PUBHUBS_URL;
 
 	onMounted(async () => {
-		console.clear();
+		// console.clear();
 		settings.initI18b({ locale: locale, availableLocales: availableLocales });
 		dialog.asGlobal();
 

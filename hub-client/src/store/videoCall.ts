@@ -165,6 +165,7 @@ const useVideoCall = defineStore('videoCall', {
             }
 
             if(this.options.e2ee){
+                // @ts-ignore
                 this.options.e2ee.worker.terminate();
                 this.options.e2ee = undefined;
             }

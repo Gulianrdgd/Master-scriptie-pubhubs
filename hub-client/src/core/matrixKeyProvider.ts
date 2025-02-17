@@ -49,7 +49,7 @@ export class MatrixKeyProvider extends BaseKeyProvider {
         participantId: string,
     ): Promise<void> => {
         this.onSetEncryptionKey(
-            await createKeyMaterialFromBuffer(encryptionKey),
+            await createKeyMaterialFromBuffer(encryptionKey.buffer as ArrayBuffer),
             participantId,
             encryptionKeyIndex,
         );

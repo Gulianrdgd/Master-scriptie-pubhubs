@@ -341,7 +341,8 @@ def build_test_hub_image(image_name, dockerfile="Dockerfile"):
         None
     """
 
-    docker_build_command = ["docker", "build",
+    docker_build_command = ["docker", "buildx", "build",
+                            "--load",
                             "-t", image_name,
                             "-f", dockerfile, 
                             "."]
@@ -655,7 +656,7 @@ def main_runner(cargo_setup:str, node_arg:str, hubs:int = 1) -> None:
     num_of_hubs = hubs
 
     # Check all dependencies for the given project and run pubhubs server and build the pubhubs infrastructure
-    dep_list = ["cargo", "cargo-watch", "npm", "docker", "sass" ]
+    dep_list = ["cargo", "cargo-watch", "npm", "docker" ]
     dep_status_dict = check_project_dependencies(dep_list)
 
     # All dependencies should be installed. In dictionary, values are status of package

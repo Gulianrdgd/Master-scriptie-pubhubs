@@ -28,6 +28,7 @@ class Authentication {
 			accessToken: response.access_token,
 			userId: response.user_id,
 			deviceId: response.device_id,
+			// deviceId: "web" + this.clientUrl,
 			loginTime: String(Date.now()),
 		};
 		this.user.setUser(new User(auth.userId));
@@ -60,6 +61,7 @@ class Authentication {
 	 */
 
 	public redirectToPubHubsLogin() {
+		console.log('Redirecting to PubHubs login');
 		this.client = sdk.createClient({
 			baseUrl: this.baseUrl,
 			useE2eForGroupCall: true,
@@ -80,24 +82,29 @@ class Authentication {
 			// First check if we have an accesstoken stored
 
 			const auth = this._fetchAuth();
-			if (auth !== null && auth.baseUrl === this.baseUrl && auth.deviceId) {
+			console.log('auth', auth);
+			if (auth !== null && auth.baseUrl === this.baseUrl) {
 				// Start client with token
 				const auth = this._fetchAuth();
 				auth.timelineSupport = true;
+				console.log('auth', auth);
 				this.client = sdk.createClient({... auth,
+					deviceId: auth.deviceId,
 					useE2eForGroupCall: true,
 					useLivekitForGroupCalls: true,
 				});
-				this.client.deviceId = auth.deviceId;
+				// this.client.deviceId = "web" + this.clientUrl;
 
 			} else {
 				// Start a clean client
+				console.log('Creating new client');
 				this.client = sdk.createClient({
 					baseUrl: this.baseUrl,
 					timelineSupport: true,
 					useE2eForGroupCall: true,
 					useLivekitForGroupCalls: true,
 				});
+				// this.client.deviceId = "web" + this.clientUrl;
 			}
 
 			// Check if we are logged in already
@@ -119,6 +126,7 @@ class Authentication {
 						(response) => {
 							window.history.pushState('', '', '/');
 							this._storeAuth(response as LoginResponse);
+							// this.client.deviceId = "web" + this.clientUrl;
 							if(response.device_id) {
 								this.client.deviceId = response.device_id;
 							}
