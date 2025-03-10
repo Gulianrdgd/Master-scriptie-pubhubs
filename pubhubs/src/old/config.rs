@@ -336,7 +336,7 @@ impl Urls {
                     // get ip address..
                     let client = awc::Client::default();
                     let mut resp = client
-                        .get("http://ifconfig.me")
+                        .get("http://ifconfig.me/ip")
                         .send()
                         .await
                         .map_err(|e| anyhow!(e.to_string() /* e is not Send */))?;

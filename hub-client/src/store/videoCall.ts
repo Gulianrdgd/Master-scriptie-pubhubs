@@ -140,7 +140,8 @@ const useVideoCall = defineStore('videoCall', {
 
             this.livekit_room = new LiveKitRoom(toRaw(this.options) as RoomOptions);
 
-            await this.livekit_room.setE2EEEnabled(true);
+            // await this.livekit_room.setE2EEEnabled(true);
+            await this.livekit_room.setE2EEEnabled(false);
 
             await this.livekit_room.connect(target_url, token, {
                 // Needed to subscribe to all tracks

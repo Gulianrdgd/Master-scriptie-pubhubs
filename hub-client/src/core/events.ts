@@ -30,21 +30,21 @@ class Events {
 
             // Start client sync
             const settings = useSettings();
-            // const deviceId = "web" + this.client.getHomeserverUrl();
-            const deviceId = this.client.getDeviceId();
+            //const deviceId = "web" + this.client.getHomeserverUrl();
+            // const deviceId = this.client.getDeviceId();
 
-            if (!deviceId) {
-                console.error('Device ID not found')
-            }
+            // if (!deviceId) {
+            //     console.error('Device ID not found')
+            // }
 
             // If for some reason we want to use the old OLM encryption, we can use this.
             // loadOlm().then(() => {
             // 	console.log('Olm initialized');
             //
 
-            this.client.initRustCrypto().then(
-                () => {
-                    console.log('rust crypto initialized');
+            // this.client.initRustCrypto().then(
+            //     () => {
+            //         console.log('rust crypto initialized');
                     this.client.startClient({
                         initialSyncLimit: settings.pagination,
                         includeArchivedRooms: false,
@@ -76,8 +76,8 @@ class Events {
 
                         }
                     );
-                }
-            )
+                // }
+            // )
         });
     }
 
